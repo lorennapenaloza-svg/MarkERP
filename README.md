@@ -57,61 +57,11 @@ En la pantalla de inicio de sesión hay botones que llenan estos datos.
 
 ## Ejecutar en VS Code
 
-Requisitos:
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
-- La extensión **C# Dev Kit** de VS Code.
 
-```bash
-cd MarkERP
-dotnet restore
-dotnet run --project src/MarkERP.Web
-```
 
-Abre http://localhost:5080. La primera vez se crea el archivo `markerp.db` (SQLite) con datos de demostración. Para empezar de cero, borra `markerp.db` y vuelve a ejecutar.
 
-Para correr las pruebas:
 
-```bash
-dotnet test
-```
-
-## Subir a GitHub
-
-```bash
-git init
-git add .
-git commit -m "MARKERP: primera versión"
-git branch -M main
-git remote add origin https://github.com/TU_USUARIO/markerp.git
-git push -u origin main
-```
-
-## Desplegar en Render
-
-### Opción A: Blueprint (recomendada)
-
-1. En Render elige **New → Blueprint** y conecta el repositorio de GitHub.
-2. Render lee `render.yaml` y crea dos cosas:
-   - la app web `markerp`, con Docker;
-   - la base de datos PostgreSQL `markerp-db`, conectada a la app con la variable `DATABASE_URL`.
-3. Espera a que termine el primer despliegue (unos minutos) y abre la URL `https://markerp-xxxx.onrender.com`.
-
-### Opción B: Manual
-
-1. Crea una base de datos **PostgreSQL** en Render.
-2. Crea un **Web Service** con:
-   - **Language:** Docker.
-   - **Dockerfile path:** `./Dockerfile`.
-3. En **Environment**, agrega la variable `DATABASE_URL` con la *Internal Database URL* de tu base de datos.
-4. Configura `/health` como ruta de health check.
-
-### Notas sobre Render
-
-- La app crea las tablas y carga los datos de demostración sola en el primer arranque, con `EnsureCreated`.
-- En el plan gratuito, la app "se duerme" después de un rato sin visitas y tarda unos segundos en despertar.
-- La base de datos gratuita de Render tiene vencimiento. Revisa la política vigente en el panel de Render.
-- Si no configuras `DATABASE_URL`, la app usa SQLite dentro del contenedor. Funciona, pero los datos se borran en cada despliegue.
 
 ## Estructura
 
