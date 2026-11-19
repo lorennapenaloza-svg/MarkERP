@@ -1,0 +1,31 @@
+@model List<SolicitudCotizacion>
+@{ ViewData["Title"] = "Cotizaciones"; ViewData["Migas"] = "Solicitar, comparar y elegir"; ViewData["Modulo"] = "cotizaciones";
+   string Clase(string e) => e switch { "Enviada" => "info", "En evaluación" => "alerta", "Adjudicada" => "ok", _ => "gris" }; }
+<div class="tarjeta mb-3">
+    <div class="pasos mb-3">
+        <div class="paso actual"><i class="bi bi-1-circle"></i> Crear solicitud y enviar a proveedores</div>
+        <div class="paso actual"><i class="bi bi-2-circle"></i> Registrar las cotizaciones recibidas</div>
+        <div class="paso actual"><i class="bi bi-3-circle"></i> Comparar: MARKERP sugiere la más conveniente</div>
+        <div class="paso actual"><i class="bi bi-4-circle"></i> Elegir y generar la orden de compra</div>
+    </div>
+    <form class="row g-2 align-items-end" method="get">
+        <div class="col-md-3"><select name="estado" class="form-select" onchange="this.form.submit()"><option value="">Todos los estados</option>
+            @foreach (var e in new[] { "Enviada", "En evaluación", "Adjudicada", "Cancelada" }) { <option selected="@(ViewBag.Estado == e)">@e</option> }</select></div>
+        <div class="col text-end"><a asp-action="Nueva" class="btn btn-mk"><i class="bi bi-plus-lg"></i> Nueva solicitud</a></div>
+    </form>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk">
+        <thead><tr><th>Número</th><th>Descripción</th><th>Fecha</th><th>Límite</th><th class="num">Productos</th><th class="num">Enviadas</th><th class="num">Respuestas</th><th>Estado</th></tr></thead>
+        <tbody>
+        @foreach (var s in Model)
+        {
+            <tr><td><a asp-action="Detalle" asp-route-id="@s.Id" class="fw-semibold">@s.Numero</a></td><td>@s.Descripcion</td>
+                <td class="small">@s.Fecha.ToString("dd/MM/yyyy")</td><td class="small">@s.FechaLimite.ToString("dd/MM/yyyy")</td>
+                <td class="num">@s.Items.Count</td><td class="num">@s.Envios.Count</td><td class="num">@s.Cotizaciones.Count</td>
+                <td><span class="pill @Clase(s.Estado)">@s.Estado</span></td></tr>
+        }
+        </tbody>
+    </table>
+    @if (!Model.Any()) { <p class="text-suave text-center py-4 mb-0">Aún no hay solicitudes de cotización.</p> }
+</div>

@@ -1,0 +1,15 @@
+@inject ConfiguracionService ConfigSrv
+@{ var config = await ConfigSrv.ObtenerAsync(); }
+<!DOCTYPE html>
+<html lang="es" data-theme="@config.TemaPorDefecto">
+<head>
+    <partial name="_Head" />
+    <title>@ViewData["Title"] · MARKERP</title>
+</head>
+<body class="mod-@(ViewData["Modulo"] ?? "inicio")">
+<div class="burbujas no-print"><span></span><span></span><span></span></div>
+@RenderBody()
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

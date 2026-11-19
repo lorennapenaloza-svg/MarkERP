@@ -1,0 +1,8 @@
+@if (TempData["ok"] is string ok)
+{
+    <div class="aviso ok"><i class="bi bi-check-circle"></i><span>@ok</span></div>
+}
+@if (TempData["error"] is string err)
+{
+    <div class="aviso error"><i class="bi bi-exclamation-circle"></i><span>@err</span></div>
+}

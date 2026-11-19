@@ -1,0 +1,77 @@
+@model Empleado
+@{ var nuevo = Model.Id == 0; ViewData["Title"] = nuevo ? "Nuevo empleado" : "Editar ficha"; ViewData["Migas"] = "Talento humano"; ViewData["Modulo"] = "talento"; }
+<form asp-action="@(nuevo ? "Crear" : "Editar")" asp-route-id="@Model.Id" method="post" class="tarjeta">
+    <div asp-validation-summary="ModelOnly"></div>
+    <input type="hidden" asp-for="Activo" />
+
+    <div class="seccion-form"><i class="bi bi-person"></i> Datos personales</div>
+    <div class="row g-3">
+        <div class="col-md-2"><label asp-for="TipoDocumento" class="form-label"></label><select asp-for="TipoDocumento" class="form-select" asp-items="ViewBag.TiposDoc"></select></div>
+        <div class="col-md-3"><label asp-for="NumeroDocumento" class="form-label"></label><input asp-for="NumeroDocumento" class="form-control" /><span asp-validation-for="NumeroDocumento"></span></div>
+        <div class="col-md-3"><label asp-for="Nombres" class="form-label"></label><input asp-for="Nombres" class="form-control" /><span asp-validation-for="Nombres"></span></div>
+        <div class="col-md-4"><label asp-for="Apellidos" class="form-label"></label><input asp-for="Apellidos" class="form-control" /><span asp-validation-for="Apellidos"></span></div>
+        <div class="col-md-3"><label asp-for="FechaNacimiento" class="form-label"></label><input asp-for="FechaNacimiento" class="form-control" /><span class="small text-suave" id="edad"></span><span asp-validation-for="FechaNacimiento"></span></div>
+        <div class="col-md-3"><label asp-for="LugarNacimiento" class="form-label"></label><input asp-for="LugarNacimiento" class="form-control" /></div>
+        <div class="col-md-2"><label asp-for="Sexo" class="form-label"></label><select asp-for="Sexo" class="form-select" asp-items="ViewBag.Sexos"></select></div>
+        <div class="col-md-2"><label asp-for="EstadoCivil" class="form-label"></label><select asp-for="EstadoCivil" class="form-select" asp-items="ViewBag.EstadosCiviles"></select></div>
+        <div class="col-md-2"><label asp-for="PersonasACargo" class="form-label"></label><input asp-for="PersonasACargo" type="number" min="0" class="form-control" /></div>
+    </div>
+
+    <div class="seccion-form mt-4"><i class="bi bi-rulers"></i> Datos físicos y dotación</div>
+    <div class="row g-3">
+        <div class="col-md-2"><label asp-for="EstaturaCm" class="form-label"></label><input asp-for="EstaturaCm" type="number" class="form-control" /><span asp-validation-for="EstaturaCm"></span></div>
+        <div class="col-md-2"><label asp-for="PesoKg" class="form-label"></label><input asp-for="PesoKg" type="number" step="0.1" class="form-control" /><span asp-validation-for="PesoKg"></span></div>
+        <div class="col-md-2"><label asp-for="TipoSangre" class="form-label"></label><select asp-for="TipoSangre" class="form-select" asp-items="ViewBag.Sangre"></select></div>
+        <div class="col-md-2"><label asp-for="TallaCamisa" class="form-label"></label><input asp-for="TallaCamisa" class="form-control" placeholder="S, M, L…" /></div>
+        <div class="col-md-2"><label asp-for="TallaPantalon" class="form-label"></label><input asp-for="TallaPantalon" class="form-control" /></div>
+        <div class="col-md-2"><label asp-for="TallaCalzado" class="form-label"></label><input asp-for="TallaCalzado" class="form-control" /></div>
+    </div>
+
+    <div class="seccion-form mt-4"><i class="bi bi-telephone"></i> Contacto</div>
+    <div class="row g-3">
+        <div class="col-md-4"><label asp-for="Direccion" class="form-label"></label><input asp-for="Direccion" class="form-control" /></div>
+        <div class="col-md-2"><label asp-for="Ciudad" class="form-label"></label><input asp-for="Ciudad" class="form-control" /></div>
+        <div class="col-md-2"><label asp-for="Telefono" class="form-label"></label><input asp-for="Telefono" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email"></span></div>
+        <div class="col-md-4"><label asp-for="ContactoEmergenciaNombre" class="form-label"></label><input asp-for="ContactoEmergenciaNombre" class="form-control" /></div>
+        <div class="col-md-3"><label asp-for="ContactoEmergenciaParentesco" class="form-label"></label><input asp-for="ContactoEmergenciaParentesco" class="form-control" /></div>
+        <div class="col-md-3"><label asp-for="ContactoEmergenciaTelefono" class="form-label"></label><input asp-for="ContactoEmergenciaTelefono" class="form-control" /></div>
+    </div>
+
+    <div class="seccion-form mt-4"><i class="bi bi-shield-plus"></i> Seguridad social</div>
+    <div class="row g-3">
+        <div class="col-md"><label asp-for="Eps" class="form-label"></label><select asp-for="Eps" class="form-select" asp-items="ViewBag.Eps"></select></div>
+        <div class="col-md"><label asp-for="Arl" class="form-label"></label><select asp-for="Arl" class="form-select" asp-items="ViewBag.Arl"></select></div>
+        <div class="col-md"><label asp-for="FondoPensiones" class="form-label"></label><select asp-for="FondoPensiones" class="form-select" asp-items="ViewBag.Pensiones"></select></div>
+        <div class="col-md"><label asp-for="FondoCesantias" class="form-label"></label><select asp-for="FondoCesantias" class="form-select" asp-items="ViewBag.Cesantias"></select></div>
+        <div class="col-md"><label asp-for="CajaCompensacion" class="form-label"></label><select asp-for="CajaCompensacion" class="form-select" asp-items="ViewBag.Cajas"></select></div>
+    </div>
+
+    <div class="seccion-form mt-4"><i class="bi bi-mortarboard"></i> Formación</div>
+    <div class="row g-3">
+        <div class="col-md-3"><label asp-for="NivelEducativo" class="form-label"></label><select asp-for="NivelEducativo" class="form-select" asp-items="ViewBag.Niveles"></select></div>
+        <div class="col-md-5"><label asp-for="Profesion" class="form-label"></label><input asp-for="Profesion" class="form-control" /></div>
+    </div>
+
+    <div class="seccion-form mt-4"><i class="bi bi-briefcase"></i> Datos laborales</div>
+    <div class="row g-3">
+        <div class="col-md-4"><label asp-for="Cargo" class="form-label"></label><input asp-for="Cargo" class="form-control" /><span asp-validation-for="Cargo"></span></div>
+        <div class="col-md-3"><label asp-for="Area" class="form-label"></label><select asp-for="Area" class="form-select" asp-items="ViewBag.Areas"></select></div>
+        <div class="col-md-3"><label asp-for="TipoContrato" class="form-label"></label><select asp-for="TipoContrato" class="form-select" asp-items="ViewBag.Contratos"></select></div>
+        <div class="col-md-2"><label asp-for="Jornada" class="form-label"></label><select asp-for="Jornada" class="form-select" asp-items="ViewBag.Jornadas"></select></div>
+        <div class="col-md-3"><label asp-for="FechaIngreso" class="form-label"></label><input asp-for="FechaIngreso" class="form-control" /></div>
+        <div class="col-md-3"><label asp-for="FechaRetiro" class="form-label"></label><input asp-for="FechaRetiro" class="form-control" /><span asp-validation-for="FechaRetiro"></span></div>
+        <div class="col-md-3"><label asp-for="Salario" class="form-label"></label><input asp-for="Salario" type="number" step="1" min="0" class="form-control" /></div>
+        <div class="col-md-3"></div>
+        <div class="col-md-3"><label asp-for="Banco" class="form-label"></label><select asp-for="Banco" class="form-select" asp-items="ViewBag.Bancos"><option value="">—</option></select></div>
+        <div class="col-md-3"><label asp-for="TipoCuenta" class="form-label"></label><select asp-for="TipoCuenta" class="form-select" asp-items="ViewBag.TiposCuenta"><option value="">—</option></select></div>
+        <div class="col-md-3"><label asp-for="NumeroCuenta" class="form-label"></label><input asp-for="NumeroCuenta" class="form-control" /></div>
+        <div class="col-12"><label asp-for="Observaciones" class="form-label"></label><textarea asp-for="Observaciones" rows="2" class="form-control"></textarea></div>
+    </div>
+    <div class="mt-4 d-flex gap-2"><button class="btn btn-mk"><i class="bi bi-check2"></i> Guardar ficha</button><a asp-action="Index" class="btn btn-suave">Cancelar</a></div>
+</form>
+@section Scripts { <script>
+const fn = document.getElementById('FechaNacimiento');
+function edad() { if (!fn.value) return; const n = new Date(fn.value), h = new Date(); let a = h.getFullYear() - n.getFullYear(); const m = h.getMonth() - n.getMonth(); if (m < 0 || (m === 0 && h.getDate() < n.getDate())) a--; document.getElementById('edad').textContent = a >= 0 ? a + ' años' : ''; }
+fn.addEventListener('input', edad); edad();
+</script> }

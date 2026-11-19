@@ -1,0 +1,39 @@
+@model ConfiguracionNegocio
+@{ ViewData["Title"] = "Configuración"; ViewData["Migas"] = "Datos del negocio"; ViewData["Modulo"] = "config";
+   var temas = new (string id, string nombre)[] { ("algodon", "Algodón (multicolor)"), ("cielo", "Cielo"), ("lavanda", "Lavanda"), ("menta", "Menta"), ("durazno", "Durazno") }; }
+<div class="row g-3">
+    <div class="col-lg-8">
+        <form asp-action="Index" method="post" class="tarjeta">
+            <div asp-validation-summary="ModelOnly"></div>
+            <div class="seccion-form"><i class="bi bi-shop"></i> Negocio</div>
+            <div class="row g-3">
+                <div class="col-md-8"><label asp-for="NombreNegocio" class="form-label"></label><input asp-for="NombreNegocio" class="form-control" /></div>
+                <div class="col-md-4"><label asp-for="Nit" class="form-label">NIT</label><input asp-for="Nit" class="form-control" /></div>
+                <div class="col-md-8"><label asp-for="Direccion" class="form-label"></label><input asp-for="Direccion" class="form-control" /></div>
+                <div class="col-md-4"><label asp-for="Telefono" class="form-label"></label><input asp-for="Telefono" class="form-control" /></div>
+                <div class="col-md-8"><label asp-for="Email" class="form-label">Correo</label><input asp-for="Email" class="form-control" /></div>
+                <div class="col-md-4"><label asp-for="PorcentajeIva" class="form-label"></label><input asp-for="PorcentajeIva" type="number" step="0.5" min="0" max="100" class="form-control" /></div>
+                <div class="col-12"><label asp-for="MensajeFactura" class="form-label"></label><input asp-for="MensajeFactura" class="form-control" /></div>
+            </div>
+            <div class="seccion-form mt-4"><i class="bi bi-palette"></i> Apariencia</div>
+            <div class="row g-2">
+                @foreach (var t in temas)
+                {
+                    <div class="col-md-4"><label class="tarjeta hover d-flex align-items-center gap-2 p-2" style="cursor:pointer">
+                        <input type="radio" asp-for="TemaPorDefecto" value="@t.id" class="form-check-input mt-0" />
+                        <span class="temas border-0 p-0" style="background:none"><button type="button" data-t="@t.id" tabindex="-1" aria-hidden="true"></button></span>@t.nombre</label></div>
+                }
+            </div>
+            <p class="small text-suave mt-2">Es el tema inicial para todos. Cada persona puede cambiarlo desde los círculos de colores de la barra superior.</p>
+            <button class="btn btn-mk mt-2"><i class="bi bi-check2"></i> Guardar</button>
+        </form>
+    </div>
+    <div class="col-lg-4">
+        <div class="tarjeta">
+            <h5>Más opciones</h5>
+            <a asp-controller="Usuarios" asp-action="Index" class="btn btn-suave w-100 mb-2 text-start"><i class="bi bi-person-gear me-2"></i>Usuarios y roles</a>
+            <a asp-action="Bitacora" class="btn btn-suave w-100 mb-2 text-start"><i class="bi bi-clock-history me-2"></i>Bitácora de actividad</a>
+            <a asp-controller="Catalogos" asp-action="Index" class="btn btn-suave w-100 text-start"><i class="bi bi-tags me-2"></i>Categorías y bodegas</a>
+        </div>
+    </div>
+</div>

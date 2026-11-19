@@ -1,0 +1,25 @@
+@model Venta
+@{ Layout = "_LayoutSimple"; ViewData["Title"] = "Factura " + Model.Numero; ViewData["Modulo"] = "ventas"; var c = (ConfiguracionNegocio)ViewBag.Config; }
+<div class="hoja">
+    <div class="encabezado">
+        <div><h3 class="mb-1">@c.NombreNegocio</h3><div class="small">NIT @c.Nit<br />@c.Direccion<br />@c.Telefono · @c.Email</div></div>
+        <div class="text-end"><div class="small text-suave">Factura de venta</div><h4 class="mb-1">@Model.Numero</h4><div class="small">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</div>
+            @if (Model.Estado == "Anulada") { <span class="pill peligro mt-1">ANULADA</span> }</div>
+    </div>
+    <div class="row mb-3 small">
+        <div class="col-6"><b>Cliente:</b> @(Model.Cliente?.Nombre ?? "Consumidor final")<br />@if (Model.Cliente != null) { <span>@Model.Cliente.TipoDocumento @Model.Cliente.Documento</span> }</div>
+        <div class="col-6 text-end"><b>Vendedor:</b> @Model.Vendedor<br /><b>Pago:</b> @Model.MetodoPago</div>
+    </div>
+    <table class="tabla-mk mb-3">
+        <thead><tr><th>Código</th><th>Producto</th><th class="num">Cant.</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead>
+        <tbody>@foreach (var d in Model.Detalles) { <tr><td>@d.Producto?.Codigo</td><td>@d.Producto?.Nombre</td><td class="num">@d.Cantidad</td><td class="num">@Calculos.Moneda(d.PrecioUnitario)</td><td class="num">@Calculos.Moneda(d.Subtotal)</td></tr> }</tbody>
+    </table>
+    <div class="ms-auto" style="max-width:300px">
+        <div class="dato"><span>Subtotal</span><span>@Calculos.Moneda(Model.Subtotal)</span></div>
+        <div class="dato"><span>Descuento</span><span>-@Calculos.Moneda(Model.Descuento)</span></div>
+        <div class="dato"><span>IVA</span><span>@Calculos.Moneda(Model.Iva)</span></div>
+        <div class="dato fs-5"><span>Total</span><span class="fw-bold">@Calculos.Moneda(Model.Total)</span></div>
+    </div>
+    <p class="text-center small text-suave mt-4">@c.MensajeFactura<br />Documento generado por MARKERP · no válido como factura electrónica DIAN.</p>
+    <div class="text-center no-print mt-3"><button onclick="window.print()" class="btn btn-mk"><i class="bi bi-printer"></i> Imprimir o guardar como PDF</button></div>
+</div>

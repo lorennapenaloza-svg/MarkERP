@@ -1,0 +1,65 @@
+@model ReporteVM
+@using System.Text.Json
+@{ ViewData["Title"] = "Reportes"; ViewData["Migas"] = $"Del {Model.Desde:dd/MM/yyyy} al {Model.Hasta:dd/MM/yyyy}"; ViewData["Modulo"] = "reportes";
+   var d = Model.Desde.ToString("yyyy-MM-dd"); var h = Model.Hasta.ToString("yyyy-MM-dd"); }
+<div class="tarjeta mb-3 no-print">
+    <form class="row g-2 align-items-end" method="get">
+        <div class="col-md-3"><label class="form-label">Desde</label><input type="date" name="desde" value="@d" class="form-control" /></div>
+        <div class="col-md-3"><label class="form-label">Hasta</label><input type="date" name="hasta" value="@h" class="form-control" /></div>
+        <div class="col-md-auto"><button class="btn btn-mk"><i class="bi bi-arrow-repeat"></i> Generar</button></div>
+        <div class="col text-end d-flex gap-2 justify-content-end flex-wrap">
+            <a asp-action="ExportarVentas" asp-route-desde="@d" asp-route-hasta="@h" class="btn btn-suave btn-sm"><i class="bi bi-filetype-csv"></i> Ventas</a>
+            <a asp-action="ExportarInventario" class="btn btn-suave btn-sm"><i class="bi bi-filetype-csv"></i> Inventario</a>
+            <a asp-controller="Empleados" asp-action="Exportar" class="btn btn-suave btn-sm"><i class="bi bi-filetype-csv"></i> Empleados</a>
+            <button type="button" onclick="window.print()" class="btn btn-suave btn-sm"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+        </div>
+    </form>
+</div>
+<div class="row g-3 mb-3">
+    <div class="col-6 col-xl-3"><div class="tarjeta kpi k1"><div class="etiqueta">Ventas</div><div class="valor">@Calculos.Moneda(Model.TotalVentas)</div><div class="small text-suave">@Model.NumVentas transacciones</div><div class="ico"><i class="bi bi-cash-stack"></i></div></div></div>
+    <div class="col-6 col-xl-3"><div class="tarjeta kpi k2"><div class="etiqueta">Utilidad bruta estimada</div><div class="valor">@Calculos.Moneda(Model.Utilidad)</div><div class="small text-suave">antes de IVA y gastos</div><div class="ico"><i class="bi bi-piggy-bank"></i></div></div></div>
+    <div class="col-6 col-xl-3"><div class="tarjeta kpi k3"><div class="etiqueta">Ticket promedio</div><div class="valor">@Calculos.Moneda(Model.TicketPromedio)</div><div class="ico"><i class="bi bi-receipt"></i></div></div></div>
+    <div class="col-6 col-xl-3"><div class="tarjeta kpi k8"><div class="etiqueta">Ahorro por cotizaciones</div><div class="valor">@Calculos.Moneda(Model.AhorroCotizaciones)</div><div class="small text-suave">@Model.SolicitudesAdjudicadas adjudicadas</div><div class="ico"><i class="bi bi-trophy"></i></div></div></div>
+</div>
+<div class="row g-3 mb-3">
+    <div class="col-lg-8"><div class="tarjeta h-100"><h5>Ventas por día</h5><div style="height:280px"><canvas id="gDias"></canvas></div></div></div>
+    <div class="col-lg-4"><div class="tarjeta h-100"><h5>Por método de pago</h5><div style="height:280px"><canvas id="gMetodo"></canvas></div></div></div>
+</div>
+<div class="row g-3 mb-3">
+    <div class="col-lg-6"><div class="tarjeta h-100 tabla-wrap" style="--mod: var(--c-ventas); --mod-f: var(--c-ventas-f)"><h5>Productos más vendidos</h5>
+        <table class="tabla-mk"><thead><tr><th>Producto</th><th class="num">Unidades</th><th class="num">Total</th></tr></thead><tbody>
+        @foreach (var p in Model.TopProductos) { <tr><td>@p.Nombre</td><td class="num">@p.Cantidad</td><td class="num">@Calculos.Moneda(p.Total)</td></tr> }</tbody></table></div></div>
+    <div class="col-lg-6"><div class="tarjeta h-100 tabla-wrap" style="--mod: var(--c-clientes); --mod-f: var(--c-clientes-f)"><h5>Ventas por vendedor</h5>
+        <table class="tabla-mk"><thead><tr><th>Vendedor</th><th class="num">Ventas</th><th class="num">Total</th></tr></thead><tbody>
+        @foreach (var v in Model.PorVendedor) { <tr><td>@v.Vendedor</td><td class="num">@v.Num</td><td class="num">@Calculos.Moneda(v.Total)</td></tr> }</tbody></table></div></div>
+</div>
+<div class="row g-3 mb-3">
+    <div class="col-lg-6"><div class="tarjeta h-100 tabla-wrap" style="--mod: var(--c-inventario); --mod-f: var(--c-inventario-f)"><h5>Valor del inventario por categoría</h5>
+        <table class="tabla-mk"><thead><tr><th>Categoría</th><th class="num">Unidades</th><th class="num">Valor (costo)</th></tr></thead><tbody>
+        @foreach (var c in Model.InventarioPorCategoria) { <tr><td>@c.Categoria</td><td class="num">@c.Unidades</td><td class="num">@Calculos.Moneda(c.Valor)</td></tr> }
+        <tr><td class="fw-semibold">Total</td><td class="num fw-semibold">@Model.InventarioPorCategoria.Sum(x => x.Unidades)</td><td class="num fw-bold">@Calculos.Moneda(Model.InventarioPorCategoria.Sum(x => x.Valor))</td></tr></tbody></table></div></div>
+    <div class="col-lg-6"><div class="tarjeta h-100 tabla-wrap" style="--mod: var(--c-compras); --mod-f: var(--c-compras-f)"><h5>Compras por proveedor</h5>
+        <table class="tabla-mk"><thead><tr><th>Proveedor</th><th class="num">Órdenes</th><th class="num">Total</th></tr></thead><tbody>
+        @foreach (var c in Model.ComprasPorProveedor) { <tr><td>@c.Proveedor</td><td class="num">@c.Ordenes</td><td class="num">@Calculos.Moneda(c.Total)</td></tr> }</tbody></table>
+        @if (!Model.ComprasPorProveedor.Any()) { <p class="small text-suave">Sin compras en el período.</p> }</div></div>
+</div>
+<div class="row g-3">
+    <div class="col-lg-4"><div class="tarjeta h-100" style="--mod: var(--c-talento); --mod-f: var(--c-talento-f)"><h5>Personal por área</h5><div style="height:220px"><canvas id="gArea"></canvas></div></div></div>
+    <div class="col-lg-4"><div class="tarjeta h-100" style="--mod: var(--c-talento); --mod-f: var(--c-talento-f)"><h5>Personal por EPS</h5>
+        @foreach (var e in Model.EmpleadosPorEps) { <div class="dato"><span>@e.Eps</span><span>@e.Num</span></div> }</div></div>
+    <div class="col-lg-4"><div class="tarjeta kpi k4 h-100"><div class="etiqueta">Nómina mensual (salarios base)</div><div class="valor">@Calculos.Moneda(Model.Nomina)</div><div class="small text-suave">@Model.EmpleadosPorArea.Sum(x => x.Num) empleados activos</div><div class="ico"><i class="bi bi-wallet2"></i></div></div></div>
+</div>
+@section Scripts {
+<script>
+const pastel = ['#F9C9A8','#A9CCF2','#B5E3CF','#CDBFEF','#F3BCCB','#F4E3A1','#A8DEDF','#D9C2EC','#C9D3E3'];
+new Chart(document.getElementById('gDias'), { type: 'line', data: { labels: @Html.Raw(JsonSerializer.Serialize(Model.EtiquetasDias)),
+    datasets: [{ data: @Html.Raw(JsonSerializer.Serialize(Model.VentasDias)), borderColor: '#7FA8D8', backgroundColor: 'rgba(169,204,242,.35)', fill: true, tension: .35, pointRadius: 2 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => moneda(c.raw) } } }, scales: { y: { ticks: { callback: v => moneda(v) }, grid: { color: 'rgba(46,58,89,.07)' } }, x: { grid: { display: false } } } } });
+new Chart(document.getElementById('gMetodo'), { type: 'doughnut', data: { labels: @Html.Raw(JsonSerializer.Serialize(Model.PorMetodo.Select(x => x.Metodo))),
+    datasets: [{ data: @Html.Raw(JsonSerializer.Serialize(Model.PorMetodo.Select(x => x.Total))), backgroundColor: pastel, borderWidth: 0 }] },
+    options: { maintainAspectRatio: false, cutout: '62%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } }, tooltip: { callbacks: { label: c => c.label + ': ' + moneda(c.raw) } } } } });
+new Chart(document.getElementById('gArea'), { type: 'bar', data: { labels: @Html.Raw(JsonSerializer.Serialize(Model.EmpleadosPorArea.Select(x => x.Area))),
+    datasets: [{ data: @Html.Raw(JsonSerializer.Serialize(Model.EmpleadosPorArea.Select(x => x.Num))), backgroundColor: pastel, borderRadius: 8 }] },
+    options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { stepSize: 1 }, grid: { display: false } }, y: { grid: { display: false } } } } });
+</script>
+}

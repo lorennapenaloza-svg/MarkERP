@@ -1,0 +1,64 @@
+@model Producto
+@{ ViewData["Title"] = Model.Nombre; ViewData["Migas"] = "Inventario · " + Model.Codigo; ViewData["Modulo"] = "inventario";
+   var movs = (List<MovimientoInventario>)ViewBag.Movimientos; var provs = (List<ProveedorProducto>)ViewBag.Proveedores;
+   var puede = User.EsRol(Roles.Admin, Roles.Inventario); }
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="tarjeta mb-3">
+            <div class="d-flex justify-content-between">
+                <span class="pill mod">@Model.Categoria?.Nombre</span>
+                @if (Model.StockActual == 0) { <span class="pill peligro">Agotado</span> } else if (Model.StockBajo) { <span class="pill alerta">Stock bajo</span> } else { <span class="pill ok">Disponible</span> }
+            </div>
+            <div class="row g-2 my-3">
+                <div class="col-4"><div class="mini-stat"><b>@Model.StockActual</b><small>Stock</small></div></div>
+                <div class="col-4"><div class="mini-stat"><b>@Model.StockMinimo</b><small>Mínimo</small></div></div>
+                <div class="col-4"><div class="mini-stat"><b>@Model.Margen%</b><small>Margen</small></div></div>
+            </div>
+            <div class="dato"><span>Precio de compra</span><span>@Calculos.Moneda(Model.PrecioCompra)</span></div>
+            <div class="dato"><span>Precio de venta</span><span>@Calculos.Moneda(Model.PrecioVenta)</span></div>
+            <div class="dato"><span>Valor en inventario</span><span>@Calculos.Moneda(Model.ValorInventario)</span></div>
+            <div class="dato"><span>Bodega</span><span>@Model.Bodega?.Nombre</span></div>
+            <div class="dato"><span>Unidad</span><span>@Model.Unidad</span></div>
+            <p class="small text-suave mt-2 mb-0">@Model.Descripcion</p>
+            @if (puede)
+            {
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <a asp-action="Movimiento" asp-route-id="@Model.Id" asp-route-tipo="Entrada" class="btn btn-ok btn-sm"><i class="bi bi-plus-circle"></i> Entrada</a>
+                    <a asp-action="Movimiento" asp-route-id="@Model.Id" asp-route-tipo="Salida" class="btn btn-peligro btn-sm"><i class="bi bi-dash-circle"></i> Salida</a>
+                    <a asp-action="Movimiento" asp-route-id="@Model.Id" asp-route-tipo="Ajuste" class="btn btn-suave btn-sm"><i class="bi bi-clipboard-check"></i> Conteo físico</a>
+                    <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-suave btn-sm"><i class="bi bi-pencil"></i> Editar</a>
+                    <a asp-controller="Cotizaciones" asp-action="Nueva" asp-route-productoId="@Model.Id" class="btn btn-mk btn-sm"><i class="bi bi-file-earmark-text"></i> Pedir cotización</a>
+                    <form asp-action="Desactivar" asp-route-id="@Model.Id" method="post"><button class="btn btn-suave btn-sm">@(Model.Activo ? "Desactivar" : "Activar")</button></form>
+                </div>
+            }
+        </div>
+        <div class="tarjeta" style="--mod: var(--c-proveedores); --mod-f: var(--c-proveedores-f)">
+            <h5><i class="bi bi-truck"></i> ¿Quién lo vende?</h5>
+            @if (!provs.Any()) { <p class="small text-suave mb-0">Ningún proveedor asociado.</p> }
+            @foreach (var pp in provs.OrderBy(x => x.PrecioReferencia))
+            {
+                <div class="dato"><span>@pp.Proveedor?.RazonSocial</span><span>@Calculos.Moneda(pp.PrecioReferencia)</span></div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="tarjeta tabla-wrap">
+            <h5>Kardex (últimos 50 movimientos)</h5>
+            <table class="tabla-mk">
+                <thead><tr><th>Fecha</th><th>Tipo</th><th>Motivo</th><th>Referencia</th><th class="num">Cantidad</th><th class="num">Antes</th><th class="num">Después</th><th>Usuario</th></tr></thead>
+                <tbody>
+                @foreach (var m in movs)
+                {
+                    <tr>
+                        <td class="small">@m.Fecha.ToString("dd/MM/yy HH:mm")</td>
+                        <td><span class="pill @(m.Tipo == "Entrada" ? "ok" : m.Tipo == "Salida" ? "peligro" : "info")">@m.Tipo</span></td>
+                        <td>@m.Motivo</td><td class="small text-suave">@m.Referencia</td>
+                        <td class="num">@m.Cantidad</td><td class="num text-suave">@m.StockAnterior</td><td class="num fw-semibold">@m.StockResultante</td>
+                        <td class="small">@m.Usuario</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

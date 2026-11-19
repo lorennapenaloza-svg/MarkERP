@@ -1,0 +1,27 @@
+@model List<MovimientoInventario>
+@{ ViewData["Title"] = "Kardex general"; ViewData["Migas"] = "Inventario · movimientos"; ViewData["Modulo"] = "inventario"; }
+<div class="tarjeta mb-3">
+    <form class="row g-2 align-items-end" method="get">
+        <div class="col-md-3"><label class="form-label">Desde</label><input type="date" name="desde" value="@(((DateTime)ViewBag.Desde).ToString("yyyy-MM-dd"))" class="form-control" /></div>
+        <div class="col-md-3"><label class="form-label">Hasta</label><input type="date" name="hasta" value="@(((DateTime)ViewBag.Hasta).ToString("yyyy-MM-dd"))" class="form-control" /></div>
+        <div class="col-md-3"><label class="form-label">Tipo</label><select name="tipo" class="form-select">
+            <option value="">Todos</option>
+            @foreach (var t in new[] { "Entrada", "Salida", "Ajuste" }) { <option value="@t" selected="@(ViewBag.Tipo == t)">@t</option> }
+        </select></div>
+        <div class="col-md-auto"><button class="btn btn-suave"><i class="bi bi-funnel"></i> Filtrar</button></div>
+    </form>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk">
+        <thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Motivo</th><th>Referencia</th><th class="num">Cantidad</th><th class="num">Stock final</th><th>Usuario</th></tr></thead>
+        <tbody>
+        @foreach (var m in Model)
+        {
+            <tr><td class="small">@m.Fecha.ToString("dd/MM/yy HH:mm")</td>
+                <td><a asp-controller="Productos" asp-action="Detalle" asp-route-id="@m.ProductoId">@m.Producto?.Nombre</a></td>
+                <td><span class="pill @(m.Tipo == "Entrada" ? "ok" : m.Tipo == "Salida" ? "peligro" : "info")">@m.Tipo</span></td>
+                <td>@m.Motivo</td><td class="small text-suave">@m.Referencia</td><td class="num">@m.Cantidad</td><td class="num">@m.StockResultante</td><td class="small">@m.Usuario</td></tr>
+        }
+        </tbody>
+    </table>
+</div>

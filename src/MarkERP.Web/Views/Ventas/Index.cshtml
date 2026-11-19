@@ -1,0 +1,33 @@
+@model List<Venta>
+@{ ViewData["Title"] = "Ventas"; ViewData["Migas"] = "Registro y seguimiento"; ViewData["Modulo"] = "ventas";
+   var pagadas = Model.Where(v => v.Estado == EstadosVenta.Pagada).ToList(); }
+<div class="row g-3 mb-3">
+    <div class="col-md-4"><div class="tarjeta kpi k1"><div class="etiqueta">Total del período</div><div class="valor">@Calculos.Moneda(pagadas.Sum(v => v.Total))</div><div class="ico"><i class="bi bi-cash-stack"></i></div></div></div>
+    <div class="col-md-4"><div class="tarjeta kpi k6"><div class="etiqueta">Número de ventas</div><div class="valor">@pagadas.Count</div><div class="ico"><i class="bi bi-receipt"></i></div></div></div>
+    <div class="col-md-4"><div class="tarjeta kpi k3"><div class="etiqueta">Ticket promedio</div><div class="valor">@Calculos.Moneda(pagadas.Count == 0 ? 0 : Calculos.Redondear(pagadas.Average(v => v.Total)))</div><div class="ico"><i class="bi bi-calculator"></i></div></div></div>
+</div>
+<div class="tarjeta mb-3">
+    <form class="row g-2 align-items-end" method="get">
+        <div class="col-md-3"><label class="form-label">Buscar</label><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Número o cliente" /></div>
+        <div class="col-md-2"><label class="form-label">Desde</label><input type="date" name="desde" value="@(((DateTime)ViewBag.Desde).ToString("yyyy-MM-dd"))" class="form-control" /></div>
+        <div class="col-md-2"><label class="form-label">Hasta</label><input type="date" name="hasta" value="@(((DateTime)ViewBag.Hasta).ToString("yyyy-MM-dd"))" class="form-control" /></div>
+        <div class="col-md-2"><label class="form-label">Estado</label><select name="estado" class="form-select"><option value="">Todos</option>
+            <option selected="@(ViewBag.Estado == "Pagada")">Pagada</option><option selected="@(ViewBag.Estado == "Anulada")">Anulada</option></select></div>
+        <div class="col-md-auto"><button class="btn btn-suave"><i class="bi bi-funnel"></i></button></div>
+        <div class="col text-end"><a asp-action="Nueva" class="btn btn-mk"><i class="bi bi-plus-lg"></i> Nueva venta</a></div>
+    </form>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk">
+        <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Vendedor</th><th>Pago</th><th class="num">Total</th><th>Estado</th></tr></thead>
+        <tbody>
+        @foreach (var v in Model)
+        {
+            <tr><td><a asp-action="Detalle" asp-route-id="@v.Id" class="fw-semibold">@v.Numero</a></td><td class="small">@v.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@(v.Cliente?.Nombre ?? "Consumidor final")</td><td class="small">@v.Vendedor</td><td class="small">@v.MetodoPago</td>
+                <td class="num fw-semibold">@Calculos.Moneda(v.Total)</td>
+                <td><span class="pill @(v.Estado == "Pagada" ? "ok" : "peligro")">@v.Estado</span></td></tr>
+        }
+        </tbody>
+    </table>
+</div>

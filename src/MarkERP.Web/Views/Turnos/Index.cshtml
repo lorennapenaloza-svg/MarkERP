@@ -1,0 +1,40 @@
+@model List<Turno>
+@{ ViewData["Title"] = "Turnos"; ViewData["Modulo"] = "talento"; DateTime lunes = ViewBag.Lunes; var empleados = (List<Empleado>)ViewBag.Empleados;
+   ViewData["Migas"] = $"Semana del {lunes:dd/MM} al {lunes.AddDays(6):dd/MM/yyyy}"; }
+<partial name="_SubnavTH" />
+<div class="tarjeta mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="d-flex gap-2">
+        <a asp-action="Index" asp-route-semana="@lunes.AddDays(-7).ToString("yyyy-MM-dd")" class="btn btn-suave btn-sm"><i class="bi bi-chevron-left"></i> Anterior</a>
+        <a asp-action="Index" class="btn btn-suave btn-sm">Esta semana</a>
+        <a asp-action="Index" asp-route-semana="@lunes.AddDays(7).ToString("yyyy-MM-dd")" class="btn btn-suave btn-sm">Siguiente <i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="d-flex gap-2 align-items-center small"><span class="turno Mañana">Mañana</span><span class="turno Tarde">Tarde</span><span class="turno Noche">Noche</span><span class="turno Completo">Completo</span>
+        <a asp-action="Crear" class="btn btn-mk btn-sm ms-2"><i class="bi bi-plus-lg"></i> Asignar turno</a></div>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk" style="min-width:900px">
+        <thead><tr><th>Empleado</th>@for (var d = 0; d < 7; d++) { var dia = lunes.AddDays(d); <th class="@(dia == DateTime.Today ? "fw-bold" : "")" style="@(dia == DateTime.Today ? "color:var(--mod-f)" : "")">@dia.ToString("ddd d", Calculos.Co)</th> }<th class="num">Horas</th></tr></thead>
+        <tbody>
+        @foreach (var e in empleados)
+        {
+            var turnosE = Model.Where(t => t.EmpleadoId == e.Id).ToList();
+            <tr>
+                <td><a asp-controller="Empleados" asp-action="Detalle" asp-route-id="@e.Id" class="fw-semibold">@e.NombreCompleto</a><div class="small text-suave">@e.Cargo</div></td>
+                @for (var d = 0; d < 7; d++)
+                {
+                    var dia = lunes.AddDays(d);
+                    <td style="min-width:110px">
+                        @foreach (var t in turnosE.Where(t => t.Fecha.Date == dia))
+                        {
+                            <div class="turno @t.Tipo"><span>@t.HoraInicio.ToString(@"hh\:mm")–@t.HoraFin.ToString(@"hh\:mm")</span>
+                                <form asp-action="Eliminar" asp-route-id="@t.Id" method="post" class="d-inline" data-confirmar="¿Quitar este turno?"><button class="btn p-0 border-0" style="font-size:11px;line-height:1" aria-label="Quitar"><i class="bi bi-x"></i></button></form></div>
+                        }
+                        <a asp-action="Crear" asp-route-empleadoId="@e.Id" asp-route-fecha="@dia.ToString("yyyy-MM-dd")" class="small text-suave">+</a>
+                    </td>
+                }
+                <td class="num fw-semibold">@turnosE.Sum(t => t.Horas).ToString("0.#")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

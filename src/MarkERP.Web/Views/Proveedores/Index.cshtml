@@ -1,0 +1,37 @@
+@model List<Proveedor>
+@{ ViewData["Title"] = "Proveedores"; ViewData["Migas"] = "Quién nos vende"; ViewData["Modulo"] = "proveedores"; }
+<div class="tarjeta mb-3">
+    <form class="row g-2 align-items-end" method="get">
+        <div class="col-md-4"><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Razón social o NIT" /></div>
+        <div class="col-md-3"><select name="ciudad" class="form-select"><option value="">Todas las ciudades</option>
+            @foreach (string c in ViewBag.Ciudades) { <option selected="@(ViewBag.Ciudad == c)">@c</option> }</select></div>
+        <div class="col-md-auto"><button class="btn btn-suave"><i class="bi bi-search"></i></button></div>
+        <div class="col text-end">
+            <a asp-action="QuienVende" class="btn btn-suave"><i class="bi bi-search-heart"></i> ¿Quién vende un producto?</a>
+            <a asp-action="Crear" class="btn btn-mk"><i class="bi bi-plus-lg"></i> Proveedor</a>
+        </div>
+    </form>
+</div>
+<div class="row g-3">
+@foreach (var p in Model)
+{
+    <div class="col-md-6 col-xl-4">
+        <a asp-action="Detalle" asp-route-id="@p.Id" class="tarjeta hover d-block text-decoration-none h-100" style="color:var(--texto)">
+            <div class="d-flex justify-content-between align-items-start">
+                <div><div class="fw-semibold">@p.RazonSocial</div><div class="small text-suave">NIT @p.Nit · @p.Ciudad</div></div>
+                @if (!p.Activo) { <span class="pill gris">Inactivo</span> }
+            </div>
+            <div class="my-2" style="color:#E3A93B">
+                @for (var i = 1; i <= 5; i++) { <i class="bi @(i <= Math.Round(p.Calificacion) ? "bi-star-fill" : "bi-star")"></i> }
+                <span class="small text-suave ms-1">@p.Calificacion.ToString("0.0")</span>
+            </div>
+            <div class="d-flex flex-wrap gap-1">
+                <span class="pill mod"><i class="bi bi-box"></i> @p.Productos.Count productos</span>
+                <span class="pill info"><i class="bi bi-clock"></i> @p.TiempoEntregaDias @(p.TiempoEntregaDias == 1 ? "día" : "días")</span>
+                <span class="pill gris">@p.CondicionesPago</span>
+            </div>
+            <div class="small text-suave mt-2"><i class="bi bi-person"></i> @p.Contacto · @p.Telefono</div>
+        </a>
+    </div>
+}
+</div>

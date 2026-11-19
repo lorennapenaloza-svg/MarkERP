@@ -1,0 +1,34 @@
+@model Producto
+@{ var nuevo = Model.Id == 0; ViewData["Title"] = nuevo ? "Nuevo producto" : "Editar producto"; ViewData["Migas"] = "Inventario"; ViewData["Modulo"] = "inventario"; }
+<form asp-action="@(nuevo ? "Crear" : "Editar")" asp-route-id="@Model.Id" method="post" class="tarjeta" style="max-width:900px">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div class="seccion-form"><i class="bi bi-tag"></i> Información</div>
+    <div class="row g-3">
+        <div class="col-md-3"><label asp-for="Codigo" class="form-label"></label><input asp-for="Codigo" class="form-control" /><span asp-validation-for="Codigo"></span></div>
+        <div class="col-md-9"><label asp-for="Nombre" class="form-label"></label><input asp-for="Nombre" class="form-control" /><span asp-validation-for="Nombre"></span></div>
+        <div class="col-12"><label asp-for="Descripcion" class="form-label"></label><textarea asp-for="Descripcion" class="form-control" rows="2"></textarea></div>
+        <div class="col-md-4"><label asp-for="CategoriaId" class="form-label"></label><select asp-for="CategoriaId" class="form-select" asp-items="ViewBag.Categorias"></select></div>
+        <div class="col-md-4"><label asp-for="BodegaId" class="form-label"></label><select asp-for="BodegaId" class="form-select" asp-items="ViewBag.Bodegas"></select></div>
+        <div class="col-md-4"><label asp-for="Unidad" class="form-label"></label><select asp-for="Unidad" class="form-select" asp-items="ViewBag.Unidades"></select></div>
+    </div>
+    <div class="seccion-form mt-4"><i class="bi bi-cash-coin"></i> Precios y existencias</div>
+    <div class="row g-3">
+        <div class="col-md-3"><label asp-for="PrecioCompra" class="form-label"></label><input asp-for="PrecioCompra" class="form-control" type="number" step="1" min="0" /><span asp-validation-for="PrecioCompra"></span></div>
+        <div class="col-md-3"><label asp-for="PrecioVenta" class="form-label"></label><input asp-for="PrecioVenta" class="form-control" type="number" step="1" min="0" /><span asp-validation-for="PrecioVenta"></span></div>
+        @if (nuevo)
+        {
+            <div class="col-md-3"><label class="form-label">Stock inicial</label><input asp-for="StockActual" class="form-control" type="number" min="0" /></div>
+        }
+        else
+        {
+            <input type="hidden" asp-for="StockActual" />
+            <div class="col-md-3"><label class="form-label">Stock actual</label><div class="form-control" style="opacity:.7">@Model.StockActual (cámbialo con un movimiento)</div></div>
+        }
+        <div class="col-md-3"><label asp-for="StockMinimo" class="form-label"></label><input asp-for="StockMinimo" class="form-control" type="number" min="0" /></div>
+        <div class="col-12 form-check ms-2"><input asp-for="Activo" class="form-check-input" /><label asp-for="Activo" class="form-check-label">Producto activo</label></div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-mk" type="submit"><i class="bi bi-check2"></i> Guardar</button>
+        <a asp-action="Index" class="btn btn-suave">Cancelar</a>
+    </div>
+</form>

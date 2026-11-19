@@ -1,0 +1,29 @@
+@model Cliente
+@{ ViewData["Title"] = Model.Nombre; ViewData["Migas"] = "Clientes"; ViewData["Modulo"] = "clientes"; var pagadas = Model.Ventas.Where(v => v.Estado == "Pagada").ToList(); }
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="tarjeta">
+            <div class="text-center mb-3"><div class="avatar lg mx-auto mb-2">@string.Concat(Model.Nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x[0]))</div><div class="fw-semibold">@Model.Nombre</div><div class="small text-suave">Cliente desde @Model.FechaRegistro.ToString("MMMM yyyy", Calculos.Co)</div></div>
+            <div class="dato"><span>Documento</span><span>@Model.TipoDocumento @Model.Documento</span></div>
+            <div class="dato"><span>Teléfono</span><span>@Model.Telefono</span></div>
+            <div class="dato"><span>Correo</span><span>@Model.Email</span></div>
+            <div class="dato"><span>Dirección</span><span>@Model.Direccion, @Model.Ciudad</span></div>
+            <div class="row g-2 mt-2">
+                <div class="col-4"><div class="mini-stat"><b>@pagadas.Count</b><small>Compras</small></div></div>
+                <div class="col-8"><div class="mini-stat"><b>@Calculos.Moneda(pagadas.Sum(v => v.Total))</b><small>Total comprado</small></div></div>
+            </div>
+            <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-suave w-100 mt-3"><i class="bi bi-pencil"></i> Editar</a>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="tarjeta tabla-wrap"><h5>Historial de compras</h5>
+            <table class="tabla-mk"><thead><tr><th>Número</th><th>Fecha</th><th>Pago</th><th class="num">Total</th><th>Estado</th></tr></thead><tbody>
+            @foreach (var v in Model.Ventas.OrderByDescending(v => v.Fecha))
+            {
+                <tr><td><a asp-controller="Ventas" asp-action="Detalle" asp-route-id="@v.Id">@v.Numero</a></td><td>@v.Fecha.ToString("dd/MM/yyyy")</td><td>@v.MetodoPago</td><td class="num">@Calculos.Moneda(v.Total)</td><td><span class="pill @(v.Estado == "Pagada" ? "ok" : "peligro")">@v.Estado</span></td></tr>
+            }
+            </tbody></table>
+            @if (!Model.Ventas.Any()) { <p class="text-suave small">Este cliente aún no tiene compras.</p> }
+        </div>
+    </div>
+</div>

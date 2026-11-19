@@ -1,0 +1,17 @@
+@model List<Usuario>
+@{ ViewData["Title"] = "Usuarios"; ViewData["Migas"] = "Accesos y roles"; ViewData["Modulo"] = "config"; }
+<div class="tarjeta mb-3 d-flex justify-content-between align-items-center">
+    <div class="small text-suave">Roles: <b>Administrador</b> (todo) · <b>Vendedor</b> (ventas y clientes) · <b>Encargado de inventario</b> (inventario, proveedores, cotizaciones y compras) · <b>Talento humano</b> (empleados, turnos y novedades)</div>
+    <a asp-action="Crear" class="btn btn-mk"><i class="bi bi-person-plus"></i> Usuario</a>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk"><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Último acceso</th><th>Estado</th><th></th></tr></thead><tbody>
+    @foreach (var u in Model)
+    {
+        <tr><td class="fw-semibold">@u.Nombre</td><td>@u.Email</td><td><span class="pill mod">@Roles.Nombre(u.Rol)</span></td>
+            <td class="small text-suave">@(u.UltimoAcceso?.ToString("dd/MM/yyyy HH:mm") ?? "Nunca")</td>
+            <td>@if (u.Activo) { <span class="pill ok">Activo</span> } else { <span class="pill gris">Inactivo</span> }</td>
+            <td class="text-end"><a asp-action="Editar" asp-route-id="@u.Id" class="btn btn-suave btn-sm"><i class="bi bi-pencil"></i></a></td></tr>
+    }
+    </tbody></table>
+</div>

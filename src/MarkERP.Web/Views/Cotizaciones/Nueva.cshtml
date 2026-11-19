@@ -1,0 +1,55 @@
+@model NuevaSolicitudVM
+@{ ViewData["Title"] = "Nueva solicitud de cotización"; ViewData["Migas"] = "Cotizaciones"; ViewData["Modulo"] = "cotizaciones";
+   var productos = (List<Producto>)ViewBag.Productos; var proveedores = (List<Proveedor>)ViewBag.Proveedores; }
+<form asp-action="Nueva" method="post">
+<div asp-validation-summary="ModelOnly"></div>
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="tarjeta mb-3">
+            <div class="row g-3">
+                <div class="col-md-8"><label class="form-label">¿Qué necesitas cotizar?</label><input asp-for="Descripcion" class="form-control" placeholder="Reposición de accesorios para diciembre" /><span asp-validation-for="Descripcion"></span></div>
+                <div class="col-md-4"><label class="form-label">Fecha límite de respuesta</label><input asp-for="FechaLimite" type="date" class="form-control" /></div>
+            </div>
+        </div>
+        <div class="tarjeta">
+            <div class="d-flex justify-content-between align-items-center mb-2"><h5 class="mb-0">Productos</h5><button type="button" id="agregar" class="btn btn-mk btn-sm"><i class="bi bi-plus-lg"></i> Producto</button></div>
+            <table class="tabla-mk" id="lineas"><thead><tr><th>Producto</th><th style="width:130px">Cantidad</th><th></th></tr></thead><tbody></tbody></table>
+            <template id="filaTpl"><tr>
+                <td><select class="form-select form-select-sm" data-campo="ProductoId">@foreach (var p in productos) { <option value="@p.Id">@p.Nombre (stock @p.StockActual)</option> }</select></td>
+                <td><input type="number" min="1" value="10" class="form-control form-control-sm" data-campo="Cantidad" /></td>
+                <td><button type="button" class="btn btn-suave btn-sm btn-icono quitar" aria-label="Quitar"><i class="bi bi-x"></i></button></td>
+            </tr></template>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="tarjeta" style="--mod: var(--c-proveedores); --mod-f: var(--c-proveedores-f)">
+            <h5>Enviar a proveedores</h5>
+            <p class="small text-suave">Se marcan en <b>verde</b> los que venden los productos elegidos. El envío por correo queda registrado como simulado.</p>
+            @foreach (var p in proveedores)
+            {
+                <label class="d-flex align-items-center gap-2 py-2 prov" style="border-bottom:1px dashed var(--borde);cursor:pointer" data-productos="@string.Join(",", p.Productos.Select(x => x.ProductoId))">
+                    <input type="checkbox" class="form-check-input mt-0" name="ProveedoresIds" value="@p.Id" checked="@Model.ProveedoresIds.Contains(p.Id)" />
+                    <span class="flex-grow-1"><span class="fw-semibold">@p.RazonSocial</span><br /><span class="small text-suave">@p.Email · @p.TiempoEntregaDias días · ★ @p.Calificacion.ToString("0.0")</span></span>
+                    <span class="pill ok d-none vende">Lo vende</span>
+                </label>
+            }
+            <button class="btn btn-mk w-100 mt-3" type="submit"><i class="bi bi-send"></i> Crear y enviar solicitud</button>
+        </div>
+    </div>
+</div>
+</form>
+@section Scripts {
+<script>
+const lineas = LineasDinamicas({ tabla: '#lineas', plantilla: '#filaTpl', prefijo: 'Items', alCambiar: marcar });
+function marcar(tbody) {
+    const ids = [...tbody.querySelectorAll('select')].map(s => s.value);
+    document.querySelectorAll('.prov').forEach(l => {
+        const vende = l.dataset.productos.split(',').some(x => ids.includes(x));
+        l.querySelector('.vende').classList.toggle('d-none', !vende);
+    });
+}
+document.getElementById('agregar').addEventListener('click', () => lineas.agregar());
+const iniciales = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Items.Select(i => new { ProductoId = i.ProductoId, Cantidad = i.Cantidad })));
+if (iniciales.length) iniciales.forEach(i => lineas.agregar(i)); else lineas.agregar();
+</script>
+}

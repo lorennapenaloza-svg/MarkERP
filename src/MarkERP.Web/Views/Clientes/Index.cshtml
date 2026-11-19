@@ -1,0 +1,28 @@
+@model List<Cliente>
+@{ ViewData["Title"] = "Clientes"; ViewData["Migas"] = "Relación con clientes"; ViewData["Modulo"] = "clientes"; }
+<div class="tarjeta mb-3">
+    <form class="row g-2 align-items-end" method="get">
+        <div class="col-md-4"><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Buscar por nombre o documento" /></div>
+        <div class="col-md-auto"><button class="btn btn-suave"><i class="bi bi-search"></i></button></div>
+        <div class="col text-end"><a asp-action="Crear" class="btn btn-mk"><i class="bi bi-person-plus"></i> Cliente</a></div>
+    </form>
+</div>
+<div class="row g-3">
+@foreach (var c in Model)
+{
+    var pagadas = c.Ventas.Where(v => v.Estado == "Pagada").ToList();
+    <div class="col-md-6 col-xl-4">
+        <a asp-action="Detalle" asp-route-id="@c.Id" class="tarjeta hover d-block text-decoration-none h-100" style="color:var(--texto)">
+            <div class="d-flex gap-3 align-items-center">
+                <div class="avatar">@string.Concat(c.Nombre.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(x => x[0]))</div>
+                <div class="flex-grow-1"><div class="fw-semibold">@c.Nombre</div><div class="small text-suave">@c.TipoDocumento @c.Documento · @c.Ciudad</div></div>
+                @if (pagadas.Count >= 5) { <span class="pill mod"><i class="bi bi-star"></i> Frecuente</span> }
+            </div>
+            <div class="row g-2 mt-2">
+                <div class="col-6"><div class="mini-stat"><b>@pagadas.Count</b><small>Compras</small></div></div>
+                <div class="col-6"><div class="mini-stat"><b style="font-size:16px">@Calculos.Moneda(pagadas.Sum(v => v.Total))</b><small>Total</small></div></div>
+            </div>
+        </a>
+    </div>
+}
+</div>

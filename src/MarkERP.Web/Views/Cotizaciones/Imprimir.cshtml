@@ -1,0 +1,19 @@
+@model SolicitudCotizacion
+@{ Layout = "_LayoutSimple"; ViewData["Title"] = "Solicitud " + Model.Numero; ViewData["Modulo"] = "cotizaciones";
+   var c = (ConfiguracionNegocio)ViewBag.Config; var p = ViewBag.Proveedor as Proveedor; }
+<div class="hoja">
+    <div class="encabezado">
+        <div><h3 class="mb-1">@c.NombreNegocio</h3><div class="small">NIT @c.Nit<br />@c.Direccion<br />@c.Telefono · @c.Email</div></div>
+        <div class="text-end"><div class="small text-suave">Solicitud de cotización</div><h4 class="mb-1">@Model.Numero</h4><div class="small">Fecha: @Model.Fecha.ToString("dd/MM/yyyy")<br />Responder antes de: <b>@Model.FechaLimite.ToString("dd/MM/yyyy")</b></div></div>
+    </div>
+    @if (p != null)
+    {
+        <p class="small"><b>Señores:</b> @p.RazonSocial · NIT @p.Nit<br /><b>Atención:</b> @p.Contacto · @p.Email</p>
+    }
+    <p>Cordial saludo. Les solicitamos enviar su mejor cotización para los siguientes productos, indicando precio unitario antes de IVA, tiempo de entrega, condiciones de pago y validez de la oferta.</p>
+    <table class="tabla-mk mb-3"><thead><tr><th>#</th><th>Código</th><th>Producto</th><th class="num">Cantidad</th><th class="num">Precio unitario</th></tr></thead>
+        <tbody>@{ var n = 1; }@foreach (var i in Model.Items) { <tr><td>@(n++)</td><td>@i.Producto?.Codigo</td><td>@i.Producto?.Nombre</td><td class="num">@i.Cantidad</td><td class="num">________</td></tr> }</tbody></table>
+    <p class="small">Descripción: @Model.Descripcion<br />Solicitado por: @Model.CreadaPor</p>
+    <p class="text-center small text-suave mt-4">Documento generado por MARKERP</p>
+    <div class="text-center no-print mt-3"><button onclick="window.print()" class="btn btn-mk"><i class="bi bi-printer"></i> Imprimir o guardar como PDF</button></div>
+</div>

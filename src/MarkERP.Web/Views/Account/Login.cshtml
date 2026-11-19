@@ -1,0 +1,48 @@
+@model LoginVM
+@{ ViewData["Title"] = "Iniciar sesión"; Layout = "_LayoutSimple"; }
+<div class="login-wrap">
+    <div class="login-card aparecer">
+        <div class="text-center mb-4">
+            <div class="marca justify-content-center" style="font-size:28px"><div class="logo" style="width:46px;height:46px;font-size:20px"><i class="bi bi-boxes"></i></div> markerp</div>
+            <p class="text-suave mb-0">Ventas, inventario, compras y personal en un solo lugar.</p>
+        </div>
+        <div class="tarjeta p-4">
+            <form asp-action="Login" method="post">
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div asp-validation-summary="ModelOnly" class="mb-2"></div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Correo</label>
+                    <input asp-for="Email" class="form-control" placeholder="admin@markerp.com" autofocus />
+                    <span asp-validation-for="Email"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label">Contraseña</label>
+                    <input asp-for="Password" class="form-control" />
+                    <span asp-validation-for="Password"></span>
+                </div>
+                <div class="form-check mb-3">
+                    <input asp-for="Recordarme" class="form-check-input" />
+                    <label asp-for="Recordarme" class="form-check-label small">Mantener la sesión abierta</label>
+                </div>
+                <button class="btn btn-mk w-100" type="submit">Entrar</button>
+            </form>
+        </div>
+        <div class="tarjeta mt-3 demo-users">
+            <div class="small-label mb-2">Usuarios de demostración (toca para llenar)</div>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn btn-suave btn-sm" data-u="admin@markerp.com" data-p="Admin123*">Administrador</button>
+                <button type="button" class="btn btn-suave btn-sm" data-u="ventas@markerp.com" data-p="Ventas123*">Vendedor</button>
+                <button type="button" class="btn btn-suave btn-sm" data-u="inventario@markerp.com" data-p="Inventario123*">Inventario</button>
+                <button type="button" class="btn btn-suave btn-sm" data-u="rrhh@markerp.com" data-p="Rrhh123*">Talento humano</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+<script>
+document.querySelectorAll('.demo-users [data-u]').forEach(b => b.addEventListener('click', () => {
+    document.getElementById('Email').value = b.dataset.u;
+    document.getElementById('Password').value = b.dataset.p;
+}));
+</script>
+}

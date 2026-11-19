@@ -1,0 +1,27 @@
+@model Proveedor
+@{ var nuevo = Model.Id == 0; ViewData["Title"] = nuevo ? "Nuevo proveedor" : "Editar proveedor"; ViewData["Migas"] = "Proveedores"; ViewData["Modulo"] = "proveedores"; }
+<form asp-action="@(nuevo ? "Crear" : "Editar")" asp-route-id="@Model.Id" method="post" class="tarjeta" style="max-width:900px">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div class="seccion-form"><i class="bi bi-building"></i> Empresa</div>
+    <div class="row g-3">
+        <div class="col-md-4"><label asp-for="Nit" class="form-label">NIT</label><input asp-for="Nit" class="form-control" placeholder="900.000.000-0" /><span asp-validation-for="Nit"></span></div>
+        <div class="col-md-8"><label asp-for="RazonSocial" class="form-label"></label><input asp-for="RazonSocial" class="form-control" /><span asp-validation-for="RazonSocial"></span></div>
+        <div class="col-md-8"><label asp-for="Direccion" class="form-label"></label><input asp-for="Direccion" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="Ciudad" class="form-label"></label><input asp-for="Ciudad" class="form-control" /></div>
+    </div>
+    <div class="seccion-form mt-4"><i class="bi bi-person-lines-fill"></i> Contacto</div>
+    <div class="row g-3">
+        <div class="col-md-4"><label asp-for="Contacto" class="form-label"></label><input asp-for="Contacto" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="Telefono" class="form-label"></label><input asp-for="Telefono" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="Email" class="form-label"></label><input asp-for="Email" class="form-control" /><span asp-validation-for="Email"></span></div>
+    </div>
+    <div class="seccion-form mt-4"><i class="bi bi-briefcase"></i> Condiciones comerciales</div>
+    <div class="row g-3">
+        <div class="col-md-4"><label asp-for="CondicionesPago" class="form-label"></label><select asp-for="CondicionesPago" class="form-select" asp-items="ViewBag.Condiciones"></select></div>
+        <div class="col-md-4"><label asp-for="TiempoEntregaDias" class="form-label"></label><input asp-for="TiempoEntregaDias" type="number" min="0" class="form-control" /></div>
+        <div class="col-md-4"><label asp-for="Calificacion" class="form-label"></label><input asp-for="Calificacion" type="number" min="1" max="5" step="0.1" class="form-control" /><span asp-validation-for="Calificacion"></span></div>
+        <div class="col-12"><label asp-for="Observaciones" class="form-label"></label><textarea asp-for="Observaciones" rows="2" class="form-control"></textarea></div>
+        <div class="col-12 form-check ms-2"><input asp-for="Activo" class="form-check-input" /><label asp-for="Activo" class="form-check-label">Proveedor activo</label></div>
+    </div>
+    <div class="mt-4 d-flex gap-2"><button class="btn btn-mk"><i class="bi bi-check2"></i> Guardar</button><a asp-action="Index" class="btn btn-suave">Cancelar</a></div>
+</form>

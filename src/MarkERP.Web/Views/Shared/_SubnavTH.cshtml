@@ -1,0 +1,7 @@
+@{ var c = ViewContext.RouteData.Values["controller"]?.ToString(); }
+<div class="d-flex flex-wrap gap-2 mb-3">
+    <a asp-controller="Empleados" asp-action="Index" class="btn btn-sm @(c == "Empleados" ? "btn-mk" : "btn-suave")"><i class="bi bi-person-vcard"></i> Empleados</a>
+    <a asp-controller="Turnos" asp-action="Index" class="btn btn-sm @(c == "Turnos" ? "btn-mk" : "btn-suave")"><i class="bi bi-calendar-week"></i> Turnos</a>
+    <a asp-controller="Novedades" asp-action="Index" class="btn btn-sm @(c == "Novedades" ? "btn-mk" : "btn-suave")"><i class="bi bi-calendar-heart"></i> Novedades</a>
+    <a asp-controller="Empleados" asp-action="Exportar" class="btn btn-sm btn-suave"><i class="bi bi-filetype-csv"></i> Exportar a Excel (CSV)</a>
+</div>

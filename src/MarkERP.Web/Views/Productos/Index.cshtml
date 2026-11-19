@@ -1,0 +1,46 @@
+@model List<Producto>
+@{ ViewData["Title"] = "Inventario"; ViewData["Migas"] = "Productos y existencias"; ViewData["Modulo"] = "inventario";
+   var puedeEditar = User.EsRol(Roles.Admin, Roles.Inventario); }
+<div class="tarjeta mb-3">
+    <form class="row g-2 align-items-end" method="get">
+        <div class="col-md-4"><label class="form-label">Buscar</label><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Nombre o código" /></div>
+        <div class="col-md-3"><label class="form-label">Categoría</label><select name="categoriaId" class="form-select" asp-items="ViewBag.Categorias"><option value="">Todas</option></select></div>
+        <div class="col-md-2 form-check ms-2 mb-2"><input class="form-check-input" type="checkbox" name="soloBajo" value="true" id="sb" @(ViewBag.SoloBajo ? "checked" : "") /><label class="form-check-label small" for="sb">Solo stock bajo</label></div>
+        <div class="col-md-auto"><button class="btn btn-suave"><i class="bi bi-funnel"></i> Filtrar</button></div>
+        <div class="col text-end">
+            @if (puedeEditar)
+            {
+                <a asp-controller="Catalogos" asp-action="Index" class="btn btn-suave"><i class="bi bi-tags"></i> Categorías y bodegas</a>
+                <a asp-controller="Movimientos" asp-action="Index" class="btn btn-suave"><i class="bi bi-arrow-left-right"></i> Kardex</a>
+                <a asp-action="Crear" class="btn btn-mk"><i class="bi bi-plus-lg"></i> Producto</a>
+            }
+        </div>
+    </form>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk">
+        <thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Bodega</th><th class="num">Compra</th><th class="num">Venta</th><th class="num">Margen</th><th class="num">Stock</th><th>Estado</th></tr></thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td class="text-suave small">@p.Codigo</td>
+                <td><a asp-action="Detalle" asp-route-id="@p.Id" class="fw-semibold">@p.Nombre</a></td>
+                <td>@p.Categoria?.Nombre</td>
+                <td class="small">@p.Bodega?.Nombre</td>
+                <td class="num">@Calculos.Moneda(p.PrecioCompra)</td>
+                <td class="num">@Calculos.Moneda(p.PrecioVenta)</td>
+                <td class="num">@p.Margen%</td>
+                <td class="num fw-semibold">@p.StockActual</td>
+                <td>
+                    @if (!p.Activo) { <span class="pill gris">Inactivo</span> }
+                    else if (p.StockActual == 0) { <span class="pill peligro">Agotado</span> }
+                    else if (p.StockBajo) { <span class="pill alerta">Stock bajo</span> }
+                    else { <span class="pill ok">Disponible</span> }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    @if (!Model.Any()) { <p class="text-suave text-center py-4 mb-0">No hay productos con esos filtros.</p> }
+</div>

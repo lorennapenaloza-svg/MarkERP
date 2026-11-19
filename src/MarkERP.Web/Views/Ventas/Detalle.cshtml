@@ -1,0 +1,41 @@
+@model Venta
+@{ ViewData["Title"] = "Venta " + Model.Numero; ViewData["Migas"] = "Ventas"; ViewData["Modulo"] = "ventas"; }
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="tarjeta tabla-wrap">
+            <table class="tabla-mk">
+                <thead><tr><th>Producto</th><th class="num">Cantidad</th><th class="num">Precio</th><th class="num">Subtotal</th></tr></thead>
+                <tbody>
+                @foreach (var d in Model.Detalles)
+                {
+                    <tr><td>@d.Producto?.Nombre <span class="small text-suave">@d.Producto?.Codigo</span></td><td class="num">@d.Cantidad</td><td class="num">@Calculos.Moneda(d.PrecioUnitario)</td><td class="num">@Calculos.Moneda(d.Subtotal)</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="tarjeta">
+            <div class="d-flex justify-content-between mb-2"><span class="pill @(Model.Estado == "Pagada" ? "ok" : "peligro")">@Model.Estado</span><span class="small text-suave">@Model.Fecha.ToString("dd/MM/yyyy HH:mm")</span></div>
+            <div class="dato"><span>Cliente</span><span>@(Model.Cliente?.Nombre ?? "Consumidor final")</span></div>
+            <div class="dato"><span>Vendedor</span><span>@Model.Vendedor</span></div>
+            <div class="dato"><span>Método de pago</span><span>@Model.MetodoPago</span></div>
+            <div class="dato"><span>Subtotal</span><span>@Calculos.Moneda(Model.Subtotal)</span></div>
+            <div class="dato"><span>Descuento (@Model.PorcentajeDescuento%)</span><span>-@Calculos.Moneda(Model.Descuento)</span></div>
+            <div class="dato"><span>IVA</span><span>@Calculos.Moneda(Model.Iva)</span></div>
+            <div class="dato" style="font-size:19px"><span style="font-size:15px">Total</span><span class="fw-bold">@Calculos.Moneda(Model.Total)</span></div>
+            @if (Model.MotivoAnulacion != null) { <p class="small mt-2" style="color:var(--peligro-f)">Anulada: @Model.MotivoAnulacion</p> }
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                <a asp-action="Imprimir" asp-route-id="@Model.Id" target="_blank" class="btn btn-mk"><i class="bi bi-printer"></i> Factura / PDF</a>
+                <a asp-action="Nueva" class="btn btn-suave">Otra venta</a>
+            </div>
+            @if (User.IsInRole(Roles.Admin) && Model.Estado == "Pagada")
+            {
+                <form asp-action="Anular" asp-route-id="@Model.Id" method="post" class="mt-3 d-flex gap-2" data-confirmar="¿Anular la venta? Los productos volverán al inventario.">
+                    <input name="motivo" class="form-control form-control-sm" placeholder="Motivo de anulación" />
+                    <button class="btn btn-peligro btn-sm">Anular</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>

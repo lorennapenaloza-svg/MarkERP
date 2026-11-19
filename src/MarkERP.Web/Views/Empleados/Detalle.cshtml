@@ -1,0 +1,97 @@
+@model Empleado
+@{ ViewData["Title"] = Model.NombreCompleto; ViewData["Migas"] = "Talento humano · ficha del empleado"; ViewData["Modulo"] = "talento";
+   var turnos = (List<Turno>)ViewBag.Turnos; var novedades = (List<Novedad>)ViewBag.Novedades; }
+<partial name="_SubnavTH" />
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="tarjeta mb-3 text-center">
+            <div class="avatar lg mx-auto mb-2">@Model.Iniciales</div>
+            <h5 class="mb-0">@Model.NombreCompleto</h5>
+            <div class="text-suave small">@Model.Cargo · @Model.Area</div>
+            <div class="mt-2">@if (Model.Activo) { <span class="pill ok">Activo</span> } else { <span class="pill gris">Retirado @Model.FechaRetiro?.ToString("dd/MM/yyyy")</span> }</div>
+            <div class="row g-2 mt-3">
+                <div class="col-4"><div class="mini-stat"><b>@Model.Edad</b><small>años</small></div></div>
+                <div class="col-4"><div class="mini-stat"><b>@Model.AniosAntiguedad</b><small>años en la empresa</small></div></div>
+                <div class="col-4"><div class="mini-stat"><b>@Model.TipoSangre</b><small>RH</small></div></div>
+            </div>
+            <div class="d-flex gap-2 mt-3 justify-content-center flex-wrap">
+                <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-mk btn-sm"><i class="bi bi-pencil"></i> Editar ficha</a>
+                <a asp-controller="Novedades" asp-action="Crear" asp-route-empleadoId="@Model.Id" class="btn btn-suave btn-sm"><i class="bi bi-calendar-plus"></i> Novedad</a>
+                <a asp-controller="Turnos" asp-action="Crear" asp-route-empleadoId="@Model.Id" class="btn btn-suave btn-sm"><i class="bi bi-clock"></i> Turno</a>
+                <form asp-action="CambiarEstado" asp-route-id="@Model.Id" method="post" data-confirmar="@(Model.Activo ? "¿Marcar como retirado?" : "¿Reintegrar al empleado?")"><button class="btn btn-suave btn-sm">@(Model.Activo ? "Retirar" : "Reintegrar")</button></form>
+            </div>
+        </div>
+        <div class="tarjeta" style="--mod: var(--c-clientes); --mod-f: var(--c-clientes-f)">
+            <h5><i class="bi bi-telephone"></i> Contacto</h5>
+            <div class="dato"><span>Teléfono</span><span>@Model.Telefono</span></div>
+            <div class="dato"><span>Correo</span><span>@Model.Email</span></div>
+            <div class="dato"><span>Dirección</span><span>@Model.Direccion, @Model.Ciudad</span></div>
+            <h6 class="mt-3 small fw-semibold">En caso de emergencia</h6>
+            <div class="dato"><span>Nombre</span><span>@Model.ContactoEmergenciaNombre</span></div>
+            <div class="dato"><span>Parentesco</span><span>@Model.ContactoEmergenciaParentesco</span></div>
+            <div class="dato"><span>Teléfono</span><span>@Model.ContactoEmergenciaTelefono</span></div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="tarjeta h-100"><h5><i class="bi bi-person"></i> Datos personales</h5>
+                    <div class="dato"><span>Documento</span><span>@Model.TipoDocumento @Model.NumeroDocumento</span></div>
+                    <div class="dato"><span>Fecha de nacimiento</span><span>@Model.FechaNacimiento.ToString("dd 'de' MMMM 'de' yyyy", Calculos.Co)</span></div>
+                    <div class="dato"><span>Edad</span><span>@Model.Edad años</span></div>
+                    <div class="dato"><span>Lugar de nacimiento</span><span>@Model.LugarNacimiento</span></div>
+                    <div class="dato"><span>Sexo</span><span>@Model.Sexo</span></div>
+                    <div class="dato"><span>Estado civil</span><span>@Model.EstadoCivil</span></div>
+                    <div class="dato"><span>Personas a cargo</span><span>@Model.PersonasACargo</span></div>
+                    <div class="dato"><span>Nivel educativo</span><span>@Model.NivelEducativo</span></div>
+                    <div class="dato"><span>Profesión u oficio</span><span>@(Model.Profesion ?? "—")</span></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="tarjeta h-100" style="--mod: var(--c-inventario); --mod-f: var(--c-inventario-f)"><h5><i class="bi bi-rulers"></i> Datos físicos y dotación</h5>
+                    <div class="dato"><span>Estatura</span><span>@Model.EstaturaCm cm (@((Model.EstaturaCm / 100.0).ToString("0.00")) m)</span></div>
+                    <div class="dato"><span>Peso</span><span>@Model.PesoKg.ToString("0.#") kg</span></div>
+                    <div class="dato"><span>Índice de masa corporal</span><span>@Model.Imc</span></div>
+                    <div class="dato"><span>Tipo de sangre</span><span>@Model.TipoSangre</span></div>
+                    <div class="dato"><span>Talla de camisa</span><span>@Model.TallaCamisa</span></div>
+                    <div class="dato"><span>Talla de pantalón</span><span>@Model.TallaPantalon</span></div>
+                    <div class="dato"><span>Talla de calzado</span><span>@Model.TallaCalzado</span></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="tarjeta h-100" style="--mod: var(--c-cotizaciones); --mod-f: var(--c-cotizaciones-f)"><h5><i class="bi bi-shield-plus"></i> Seguridad social</h5>
+                    <div class="dato"><span>EPS</span><span>@Model.Eps</span></div>
+                    <div class="dato"><span>ARL</span><span>@Model.Arl</span></div>
+                    <div class="dato"><span>Fondo de pensiones</span><span>@Model.FondoPensiones</span></div>
+                    <div class="dato"><span>Fondo de cesantías</span><span>@Model.FondoCesantias</span></div>
+                    <div class="dato"><span>Caja de compensación</span><span>@Model.CajaCompensacion</span></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="tarjeta h-100" style="--mod: var(--c-compras); --mod-f: var(--c-compras-f)"><h5><i class="bi bi-briefcase"></i> Datos laborales</h5>
+                    <div class="dato"><span>Cargo</span><span>@Model.Cargo</span></div>
+                    <div class="dato"><span>Área</span><span>@Model.Area</span></div>
+                    <div class="dato"><span>Contrato</span><span>@Model.TipoContrato</span></div>
+                    <div class="dato"><span>Jornada</span><span>@Model.Jornada</span></div>
+                    <div class="dato"><span>Fecha de ingreso</span><span>@Model.FechaIngreso.ToString("dd/MM/yyyy")</span></div>
+                    <div class="dato"><span>Antigüedad</span><span>@Model.Antiguedad</span></div>
+                    <div class="dato"><span>Salario</span><span>@Calculos.Moneda(Model.Salario)</span></div>
+                    <div class="dato"><span>Cuenta</span><span>@Model.Banco @Model.TipoCuenta @Model.NumeroCuenta</span></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="tarjeta h-100" style="--mod: var(--c-proveedores); --mod-f: var(--c-proveedores-f)"><h5><i class="bi bi-calendar-week"></i> Turnos recientes</h5>
+                    @foreach (var t in turnos) { <div class="dato"><span>@t.Fecha.ToString("ddd dd/MM", Calculos.Co)</span><span>@t.HoraInicio.ToString(@"hh\:mm") – @t.HoraFin.ToString(@"hh\:mm") · @t.Tipo</span></div> }
+                    @if (!turnos.Any()) { <p class="small text-suave mb-0">Sin turnos asignados.</p> }
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="tarjeta h-100" style="--mod: var(--c-ventas); --mod-f: var(--c-ventas-f)"><h5><i class="bi bi-calendar-heart"></i> Novedades</h5>
+                    @foreach (var n in novedades) { <div class="dato"><span>@n.Tipo · @n.FechaInicio.ToString("dd/MM") – @n.FechaFin.ToString("dd/MM") (@n.Dias d)</span><span><span class="pill @(n.Estado == "Aprobada" ? "ok" : n.Estado == "Pendiente" ? "alerta" : "gris")">@n.Estado</span></span></div> }
+                    @if (!novedades.Any()) { <p class="small text-suave mb-0">Sin novedades.</p> }
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Observaciones)) { <div class="col-12"><div class="tarjeta"><h5>Observaciones</h5><p class="mb-0">@Model.Observaciones</p></div></div> }
+        </div>
+    </div>
+</div>

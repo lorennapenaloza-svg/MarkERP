@@ -1,0 +1,37 @@
+@model List<Empleado>
+@{ ViewData["Title"] = "Talento humano"; ViewData["Migas"] = "Equipo de trabajo"; ViewData["Modulo"] = "talento";
+   var colores = new[] { "--c-ventas", "--c-inventario", "--c-proveedores", "--c-cotizaciones", "--c-clientes", "--c-compras", "--c-reportes" }; }
+<partial name="_SubnavTH" />
+<div class="tarjeta mb-3">
+    <form class="row g-2 align-items-end" method="get">
+        <div class="col-md-4"><input name="q" value="@ViewBag.Q" class="form-control" placeholder="Nombre, documento o cargo" /></div>
+        <div class="col-md-2"><select name="area" class="form-select"><option value="">Todas las áreas</option>@foreach (var a in Listas.Areas) { <option selected="@(ViewBag.Area == a)">@a</option> }</select></div>
+        <div class="col-md-2"><select name="eps" class="form-select"><option value="">Todas las EPS</option>@foreach (var e in Listas.Eps) { <option selected="@(ViewBag.EpsSel == e)">@e</option> }</select></div>
+        <div class="col-md-2 form-check ms-2 mb-2"><input class="form-check-input" type="checkbox" name="inactivos" value="true" id="in" checked="@((bool)ViewBag.Inactivos)" /><label class="form-check-label small" for="in">Ver retirados</label></div>
+        <div class="col-md-auto"><button class="btn btn-suave"><i class="bi bi-funnel"></i></button></div>
+        <div class="col text-end"><a asp-action="Crear" class="btn btn-mk"><i class="bi bi-person-plus"></i> Empleado</a></div>
+    </form>
+</div>
+<div class="row g-3">
+@{ var idx = 0; }
+@foreach (var e in Model)
+{
+    var color = colores[idx++ % colores.Length];
+    <div class="col-md-6 col-xl-4">
+        <a asp-action="Detalle" asp-route-id="@e.Id" class="tarjeta hover d-block text-decoration-none h-100" style="color:var(--texto)">
+            <div class="d-flex gap-3 align-items-center mb-2">
+                <div class="avatar" style="background:var(@color);width:46px;height:46px">@e.Iniciales</div>
+                <div><div class="fw-semibold">@e.NombreCompleto</div><div class="small text-suave">@e.Cargo · @e.Area</div></div>
+            </div>
+            <div class="d-flex flex-wrap gap-1">
+                <span class="pill mod">@e.Edad años</span>
+                <span class="pill info"><i class="bi bi-hospital"></i> @e.Eps</span>
+                <span class="pill peligro"><i class="bi bi-droplet"></i> @e.TipoSangre</span>
+                <span class="pill ok"><i class="bi bi-hourglass-split"></i> @e.Antiguedad</span>
+            </div>
+            <div class="small text-suave mt-2">@e.TipoDocumento @e.NumeroDocumento · @e.Telefono</div>
+        </a>
+    </div>
+}
+</div>
+@if (!Model.Any()) { <div class="tarjeta text-suave text-center">No hay empleados con esos filtros.</div> }

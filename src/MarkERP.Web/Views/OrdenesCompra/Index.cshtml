@@ -1,0 +1,29 @@
+@model List<OrdenCompra>
+@{ ViewData["Title"] = "Órdenes de compra"; ViewData["Migas"] = "Compras a proveedores"; ViewData["Modulo"] = "compras";
+   string Clase(string e) => e switch { "Borrador" => "gris", "Enviada" => "info", "Recibida" => "ok", _ => "peligro" }; }
+<div class="row g-3 mb-3">
+    <div class="col-md-4"><div class="tarjeta kpi k5"><div class="etiqueta">Pendientes por recibir</div><div class="valor">@Model.Count(o => o.Estado is "Borrador" or "Enviada")</div><div class="ico"><i class="bi bi-hourglass"></i></div></div></div>
+    <div class="col-md-4"><div class="tarjeta kpi k2"><div class="etiqueta">Recibidas</div><div class="valor">@Model.Count(o => o.Estado == "Recibida")</div><div class="ico"><i class="bi bi-box-arrow-in-down"></i></div></div></div>
+    <div class="col-md-4"><div class="tarjeta kpi k7"><div class="etiqueta">Total comprado</div><div class="valor">@Calculos.Moneda(Model.Where(o => o.Estado != "Cancelada").Sum(o => o.Total))</div><div class="ico"><i class="bi bi-cash"></i></div></div></div>
+</div>
+<div class="tarjeta mb-3">
+    <form class="row g-2" method="get">
+        <div class="col-md-3"><select name="estado" class="form-select" onchange="this.form.submit()"><option value="">Todos los estados</option>
+            @foreach (var e in new[] { "Borrador", "Enviada", "Recibida", "Cancelada" }) { <option selected="@(ViewBag.Estado == e)">@e</option> }</select></div>
+        <div class="col text-end"><a asp-controller="Cotizaciones" asp-action="Nueva" class="btn btn-suave"><i class="bi bi-file-earmark-text"></i> Cotizar primero</a> <a asp-action="Nueva" class="btn btn-mk"><i class="bi bi-plus-lg"></i> Orden directa</a></div>
+    </form>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk">
+        <thead><tr><th>Número</th><th>Fecha</th><th>Proveedor</th><th>Entrega estimada</th><th class="num">Total</th><th>Estado</th></tr></thead>
+        <tbody>
+        @foreach (var o in Model)
+        {
+            <tr><td><a asp-action="Detalle" asp-route-id="@o.Id" class="fw-semibold">@o.Numero</a></td><td class="small">@o.Fecha.ToString("dd/MM/yyyy")</td>
+                <td>@o.Proveedor?.RazonSocial</td><td class="small">@o.FechaEntregaEstimada?.ToString("dd/MM/yyyy")</td>
+                <td class="num fw-semibold">@Calculos.Moneda(o.Total)</td><td><span class="pill @Clase(o.Estado)">@o.Estado</span></td></tr>
+        }
+        </tbody>
+    </table>
+    @if (!Model.Any()) { <p class="text-suave text-center py-4 mb-0">Sin órdenes de compra.</p> }
+</div>

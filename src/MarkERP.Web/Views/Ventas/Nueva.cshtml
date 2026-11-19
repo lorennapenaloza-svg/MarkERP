@@ -1,0 +1,88 @@
+@model NuevaVentaVM
+@{ ViewData["Title"] = "Nueva venta"; ViewData["Migas"] = "Punto de venta"; ViewData["Modulo"] = "ventas";
+   var productos = (List<Producto>)ViewBag.Productos; decimal iva = ViewBag.Iva; }
+<form asp-action="Nueva" method="post">
+<div asp-validation-summary="ModelOnly"></div>
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="tarjeta">
+            <div class="d-flex gap-2 mb-3">
+                <input id="buscador" class="form-control" list="listaProductos" placeholder="Escribe o escanea un producto y presiona Enter" />
+                <datalist id="listaProductos">@foreach (var p in productos) { <option value="@p.Codigo · @p.Nombre"></option> }</datalist>
+                <button type="button" id="agregar" class="btn btn-mk"><i class="bi bi-plus-lg"></i></button>
+            </div>
+            <div class="tabla-wrap">
+            <table class="tabla-mk" id="lineas">
+                <thead><tr><th>Producto</th><th style="width:110px">Cantidad</th><th class="num">Precio</th><th class="num">Subtotal</th><th></th></tr></thead>
+                <tbody></tbody>
+            </table>
+            </div>
+            <p id="vacio" class="text-suave text-center py-4 mb-0">Agrega productos para empezar la venta.</p>
+            <template id="filaTpl">
+                <tr>
+                    <td><select class="form-select form-select-sm" data-campo="ProductoId">
+                        @foreach (var p in productos) { <option value="@p.Id" data-precio="@p.PrecioVenta.ToString(System.Globalization.CultureInfo.InvariantCulture)" data-stock="@p.StockActual">@p.Nombre (disp. @p.StockActual)</option> }
+                    </select></td>
+                    <td><input type="number" min="1" value="1" class="form-control form-control-sm" data-campo="Cantidad" /></td>
+                    <td class="num precio"></td><td class="num sub fw-semibold"></td>
+                    <td><button type="button" class="btn btn-suave btn-sm btn-icono quitar" aria-label="Quitar"><i class="bi bi-x"></i></button></td>
+                </tr>
+            </template>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="tarjeta">
+            <div class="mb-3"><label class="form-label">Cliente</label>
+                <select asp-for="ClienteId" class="form-select" asp-items="ViewBag.Clientes"><option value="">Consumidor final</option></select>
+                <a asp-controller="Clientes" asp-action="Crear" class="small" target="_blank">+ Registrar cliente nuevo</a></div>
+            <div class="mb-3"><label class="form-label">Método de pago</label><select asp-for="MetodoPago" class="form-select" asp-items="ViewBag.Metodos"></select></div>
+            <div class="mb-3"><label class="form-label">Descuento (%)</label><input asp-for="PorcentajeDescuento" type="number" min="0" max="100" step="0.5" class="form-control" /></div>
+            <div class="dato"><span>Subtotal</span><span id="tSub">$0</span></div>
+            <div class="dato"><span>Descuento</span><span id="tDesc">$0</span></div>
+            <div class="dato"><span>IVA (@iva%)</span><span id="tIva">$0</span></div>
+            <div class="dato" style="font-size:20px"><span style="font-size:15px">Total</span><span id="tTotal" class="fw-bold">$0</span></div>
+            <div id="avisoStock" class="small mt-2" style="color:var(--peligro-f)"></div>
+            <button class="btn btn-mk w-100 mt-3" type="submit"><i class="bi bi-check2-circle"></i> Registrar venta</button>
+        </div>
+    </div>
+</div>
+</form>
+@section Scripts {
+<script>
+const IVA = @iva.ToString(System.Globalization.CultureInfo.InvariantCulture);
+const lineas = LineasDinamicas({ tabla: '#lineas', plantilla: '#filaTpl', prefijo: 'Items', alCambiar: recalcular });
+function recalcular(tbody) {
+    let sub = 0, aviso = '';
+    tbody.querySelectorAll('tr').forEach(tr => {
+        const opt = tr.querySelector('select').selectedOptions[0];
+        const precio = parseFloat(opt.dataset.precio), cant = parseInt(tr.querySelector('[data-campo=Cantidad]').value || 0);
+        if (cant > parseInt(opt.dataset.stock)) aviso = 'Hay productos con cantidad mayor al stock disponible.';
+        tr.querySelector('.precio').textContent = moneda(precio);
+        tr.querySelector('.sub').textContent = moneda(precio * cant);
+        sub += precio * cant;
+    });
+    const pd = parseFloat(document.getElementById('PorcentajeDescuento').value || 0);
+    const desc = Math.round(sub * pd / 100), iva = Math.round((sub - desc) * IVA / 100);
+    document.getElementById('tSub').textContent = moneda(sub);
+    document.getElementById('tDesc').textContent = '-' + moneda(desc);
+    document.getElementById('tIva').textContent = moneda(iva);
+    document.getElementById('tTotal').textContent = moneda(sub - desc + iva);
+    document.getElementById('avisoStock').textContent = aviso;
+    document.getElementById('vacio').style.display = tbody.children.length ? 'none' : '';
+}
+const codigos = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(productos.ToDictionary(p => p.Codigo + " · " + p.Nombre, p => p.Id)));
+function agregarDesdeBuscador() {
+    const b = document.getElementById('buscador'); const id = codigos[b.value];
+    if (!id) { lineas.agregar(); } else {
+        const existente = [...lineas.tbody.querySelectorAll('tr')].find(tr => tr.querySelector('select').value == id);
+        if (existente) { const c = existente.querySelector('[data-campo=Cantidad]'); c.value = parseInt(c.value) + 1; lineas.reindexar(); }
+        else lineas.agregar({ ProductoId: id });
+    }
+    b.value = ''; b.focus();
+}
+document.getElementById('agregar').addEventListener('click', agregarDesdeBuscador);
+document.getElementById('buscador').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); agregarDesdeBuscador(); } });
+document.getElementById('PorcentajeDescuento').addEventListener('input', () => recalcular(lineas.tbody));
+recalcular(lineas.tbody);
+</script>
+}

@@ -1,0 +1,112 @@
+@model DashboardVM
+@{
+    ViewData["Title"] = "Hola, " + (User.Identity?.Name?.Split(' ')[0] ?? "");
+    ViewData["Migas"] = DateTime.Today.ToString("dddd d 'de' MMMM 'de' yyyy", Calculos.Co);
+    ViewData["Modulo"] = "inicio";
+    var variacion = Model.VentasMesAnterior == 0 ? 0 : Math.Round((Model.VentasMes - Model.VentasMesAnterior) / Model.VentasMesAnterior * 100, 1);
+    var esVendedor = User.EsRol(Roles.Admin, Roles.Vendedor);
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-xl-3"><div class="tarjeta kpi k1 hover h-100">
+        <div class="etiqueta">Ventas de hoy</div><div class="valor">@Calculos.Moneda(Model.VentasHoy)</div>
+        <div class="small text-suave">@Model.NumVentasHoy ventas</div><div class="ico"><i class="bi bi-bag-heart"></i></div></div></div>
+    <div class="col-6 col-xl-3"><div class="tarjeta kpi k6 hover h-100">
+        <div class="etiqueta">Ventas del mes</div><div class="valor">@Calculos.Moneda(Model.VentasMes)</div>
+        <div class="small text-suave">Mes anterior completo: @Calculos.Moneda(Model.VentasMesAnterior)</div><div class="ico"><i class="bi bi-graph-up-arrow"></i></div></div></div>
+    <div class="col-6 col-xl-3"><div class="tarjeta kpi k2 hover h-100">
+        <div class="etiqueta">Productos activos</div><div class="valor">@Model.TotalProductos</div>
+        <div class="small text-suave">Inventario: @Calculos.Moneda(Model.ValorInventario)</div><div class="ico"><i class="bi bi-box-seam"></i></div></div></div>
+    <div class="col-6 col-xl-3"><div class="tarjeta kpi k4 hover h-100">
+        <div class="etiqueta">Equipo en turno ahora</div><div class="valor">@Model.EmpleadosEnTurno / @Model.EmpleadosActivos</div>
+        <div class="small text-suave">empleados activos</div><div class="ico"><i class="bi bi-people"></i></div></div></div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-lg-8">
+        <div class="tarjeta h-100">
+            <div class="d-flex justify-content-between align-items-center"><h5 class="mb-0">Ventas de los últimos 7 días</h5>
+                @if (esVendedor) { <a asp-controller="Ventas" asp-action="Nueva" class="btn btn-mk btn-sm"><i class="bi bi-plus-lg me-1"></i>Nueva venta</a> }
+            </div>
+            <div style="height:260px" class="mt-3"><canvas id="grafVentas"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="tarjeta h-100">
+            <h5>Atajos</h5>
+            <div class="row g-2">
+                <div class="col-6"><a asp-controller="Cotizaciones" asp-action="Index" class="tarjeta kpi k3 hover d-block text-decoration-none p-3"><div class="etiqueta">Cotizaciones abiertas</div><div class="valor">@Model.CotizacionesAbiertas</div></a></div>
+                <div class="col-6"><a asp-controller="OrdenesCompra" asp-action="Index" class="tarjeta kpi k5 hover d-block text-decoration-none p-3"><div class="etiqueta">Órdenes pendientes</div><div class="valor">@Model.OrdenesPendientes</div></a></div>
+                <div class="col-6"><a asp-controller="Productos" asp-action="Index" asp-route-soloBajo="true" class="tarjeta kpi k1 hover d-block text-decoration-none p-3"><div class="etiqueta">Con stock bajo</div><div class="valor">@Model.StockBajo.Count@(Model.StockBajo.Count == 6 ? "+" : "")</div></a></div>
+                <div class="col-6"><a asp-controller="Proveedores" asp-action="QuienVende" class="tarjeta kpi k7 hover d-block text-decoration-none p-3"><div class="etiqueta">¿Quién lo vende?</div><div class="valor"><i class="bi bi-search" style="font-size:20px"></i></div></a></div>
+            </div>
+            <h6 class="mt-3 mb-2" style="font-size:13px">Más vendidos esta semana</h6>
+            @foreach (var t in Model.TopProductos)
+            {
+                <div class="dato"><span>@t.Nombre</span><span>@t.Cantidad und</span></div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="tarjeta h-100" style="--mod: var(--c-inventario); --mod-f: var(--c-inventario-f)">
+            <h5><i class="bi bi-exclamation-triangle me-1"></i> Stock bajo</h5>
+            @if (!Model.StockBajo.Any()) { <p class="text-suave small">Todo el inventario está por encima del mínimo.</p> }
+            @foreach (var p in Model.StockBajo)
+            {
+                <div class="dato">
+                    <span><a asp-controller="Productos" asp-action="Detalle" asp-route-id="@p.Id">@p.Nombre</a></span>
+                    <span><span class="pill @(p.StockActual == 0 ? "peligro" : p.StockActual <= p.StockMinimo / 2 ? "peligro" : "alerta")">@p.StockActual / mín @p.StockMinimo</span></span>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="tarjeta h-100" style="--mod: var(--c-ventas); --mod-f: var(--c-ventas-f)">
+            <h5><i class="bi bi-receipt me-1"></i> Últimas ventas</h5>
+            <table class="tabla-mk">
+                <tbody>
+                @foreach (var v in Model.UltimasVentas)
+                {
+                    <tr>
+                        <td>@if (esVendedor) { <a asp-controller="Ventas" asp-action="Detalle" asp-route-id="@v.Id">@v.Numero</a> } else { @v.Numero }
+                            <div class="small text-suave">@(v.Cliente?.Nombre ?? "Consumidor final")</div></td>
+                        <td class="small text-suave">@v.Fecha.ToString("dd/MM HH:mm")</td>
+                        <td class="num">@Calculos.Moneda(v.Total)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="tarjeta h-100" style="--mod: var(--c-talento); --mod-f: var(--c-talento-f)">
+            <h5><i class="bi bi-calendar-heart me-1"></i> Novedades del equipo</h5>
+            @if (!Model.NovedadesActivas.Any()) { <p class="text-suave small">Sin novedades próximas.</p> }
+            @foreach (var n in Model.NovedadesActivas)
+            {
+                <div class="dato" style="flex-direction:column;gap:2px">
+                    <span class="fw-semibold" style="color:var(--texto)">@n.Empleado?.NombreCompleto</span>
+                    <span class="small text-start" style="font-weight:400"><span class="pill info">@n.Tipo</span> @n.FechaInicio.ToString("dd/MM") – @n.FechaFin.ToString("dd/MM")</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+new Chart(document.getElementById('grafVentas'), {
+    type: 'bar',
+    data: {
+        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.EtiquetasDias)),
+        datasets: [{ data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.VentasDias)),
+            backgroundColor: ['#F9C9A8','#A9CCF2','#B5E3CF','#CDBFEF','#F3BCCB','#F4E3A1','#A8DEDF'], borderRadius: 10, borderSkipped: false }]
+    },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => moneda(c.raw) } } },
+        scales: { y: { grid: { color: 'rgba(46,58,89,.07)' }, ticks: { callback: v => moneda(v) } }, x: { grid: { display: false } } } }
+});
+</script>
+}

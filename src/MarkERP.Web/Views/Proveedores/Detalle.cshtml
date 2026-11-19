@@ -1,0 +1,49 @@
+@model Proveedor
+@{ ViewData["Title"] = Model.RazonSocial; ViewData["Migas"] = "Proveedores · NIT " + Model.Nit; ViewData["Modulo"] = "proveedores";
+   var ordenes = (List<OrdenCompra>)ViewBag.Ordenes; var cots = (List<Cotizacion>)ViewBag.Cotizaciones; }
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="tarjeta mb-3">
+            <div class="mb-2" style="color:#E3A93B">@for (var i = 1; i <= 5; i++) { <i class="bi @(i <= Math.Round(Model.Calificacion) ? "bi-star-fill" : "bi-star")"></i> } <span class="small text-suave">@Model.Calificacion.ToString("0.0") / 5</span></div>
+            <div class="dato"><span>Contacto</span><span>@Model.Contacto</span></div>
+            <div class="dato"><span>Teléfono</span><span>@Model.Telefono</span></div>
+            <div class="dato"><span>Correo</span><span>@Model.Email</span></div>
+            <div class="dato"><span>Dirección</span><span>@Model.Direccion, @Model.Ciudad</span></div>
+            <div class="dato"><span>Condiciones de pago</span><span>@Model.CondicionesPago</span></div>
+            <div class="dato"><span>Tiempo de entrega</span><span>@Model.TiempoEntregaDias @(Model.TiempoEntregaDias == 1 ? "día" : "días")</span></div>
+            <div class="dato"><span>Estado</span><span>@(Model.Activo ? "Activo" : "Inactivo")</span></div>
+            @if (!string.IsNullOrEmpty(Model.Observaciones)) { <p class="small text-suave mt-2 mb-0">@Model.Observaciones</p> }
+            <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-suave w-100 mt-3"><i class="bi bi-pencil"></i> Editar</a>
+        </div>
+        <div class="tarjeta" style="--mod: var(--c-compras); --mod-f: var(--c-compras-f)">
+            <h5>Órdenes de compra</h5>
+            @foreach (var o in ordenes) { <div class="dato"><span><a asp-controller="OrdenesCompra" asp-action="Detalle" asp-route-id="@o.Id">@o.Numero</a> · @o.Estado</span><span>@Calculos.Moneda(o.Total)</span></div> }
+            @if (!ordenes.Any()) { <p class="small text-suave mb-0">Sin órdenes todavía.</p> }
+            <h5 class="mt-3">Cotizaciones enviadas</h5>
+            @foreach (var c in cots) { <div class="dato"><span><a asp-controller="Cotizaciones" asp-action="Detalle" asp-route-id="@c.SolicitudCotizacionId">@c.SolicitudCotizacion?.Numero</a> · @c.Estado</span><span>@Calculos.Moneda(c.Total)</span></div> }
+            @if (!cots.Any()) { <p class="small text-suave mb-0">Sin cotizaciones todavía.</p> }
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="tarjeta tabla-wrap">
+            <h5>Productos que vende</h5>
+            <form asp-action="AgregarProducto" asp-route-id="@Model.Id" method="post" class="row g-2 mb-3">
+                <div class="col-md-6"><select name="productoId" class="form-select" asp-items="ViewBag.ProductosDisponibles"><option value="0">Elige un producto…</option></select></div>
+                <div class="col-md-4"><input name="precio" type="number" min="1" step="1" class="form-control" placeholder="Precio de referencia" /></div>
+                <div class="col-md-2"><button class="btn btn-mk w-100"><i class="bi bi-plus-lg"></i> Agregar</button></div>
+            </form>
+            <table class="tabla-mk">
+                <thead><tr><th>Producto</th><th class="num">Precio proveedor</th><th class="num">Nuestro costo</th><th class="num">Precio de venta</th><th>Actualizado</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var pp in Model.Productos.OrderBy(x => x.Producto?.Nombre))
+                {
+                    <tr><td><a asp-controller="Productos" asp-action="Detalle" asp-route-id="@pp.ProductoId">@pp.Producto?.Nombre</a></td>
+                        <td class="num fw-semibold">@Calculos.Moneda(pp.PrecioReferencia)</td><td class="num">@Calculos.Moneda(pp.Producto?.PrecioCompra ?? 0)</td>
+                        <td class="num">@Calculos.Moneda(pp.Producto?.PrecioVenta ?? 0)</td><td class="small text-suave">@pp.FechaActualizacion.ToString("dd/MM/yyyy")</td>
+                        <td><form asp-action="QuitarProducto" asp-route-id="@Model.Id" asp-route-ppId="@pp.Id" method="post"><button class="btn btn-suave btn-sm btn-icono" aria-label="Quitar"><i class="bi bi-x"></i></button></form></td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

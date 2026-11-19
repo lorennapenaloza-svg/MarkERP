@@ -1,0 +1,47 @@
+@model OrdenCompra
+@{ ViewData["Title"] = "Orden " + Model.Numero; ViewData["Migas"] = "Compras · " + Model.Proveedor?.RazonSocial; ViewData["Modulo"] = "compras";
+   string Clase(string e) => e switch { "Borrador" => "gris", "Enviada" => "info", "Recibida" => "ok", _ => "peligro" }; }
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="tarjeta tabla-wrap">
+            <table class="tabla-mk">
+                <thead><tr><th>Producto</th><th class="num">Cantidad</th><th class="num">Precio unitario</th><th class="num">Subtotal</th><th class="num">Stock actual</th></tr></thead>
+                <tbody>
+                @foreach (var d in Model.Detalles)
+                {
+                    <tr><td>@d.Producto?.Nombre</td><td class="num">@d.Cantidad</td><td class="num">@Calculos.Moneda(d.PrecioUnitario)</td><td class="num">@Calculos.Moneda(d.Subtotal)</td><td class="num text-suave">@d.Producto?.StockActual</td></tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="tarjeta">
+            <div class="d-flex justify-content-between mb-2"><span class="pill @Clase(Model.Estado)">@Model.Estado</span><span class="small text-suave">@Model.Fecha.ToString("dd/MM/yyyy")</span></div>
+            <div class="dato"><span>Proveedor</span><span><a asp-controller="Proveedores" asp-action="Detalle" asp-route-id="@Model.ProveedorId">@Model.Proveedor?.RazonSocial</a></span></div>
+            @if (Model.Cotizacion?.SolicitudCotizacion != null)
+            {
+                <div class="dato"><span>Cotización</span><span><a asp-controller="Cotizaciones" asp-action="Detalle" asp-route-id="@Model.Cotizacion.SolicitudCotizacionId">@Model.Cotizacion.SolicitudCotizacion.Numero</a></span></div>
+            }
+            <div class="dato"><span>Condiciones de pago</span><span>@Model.CondicionesPago</span></div>
+            <div class="dato"><span>Entrega estimada</span><span>@Model.FechaEntregaEstimada?.ToString("dd/MM/yyyy")</span></div>
+            @if (Model.FechaRecepcion.HasValue) { <div class="dato"><span>Recibida</span><span>@Model.FechaRecepcion.Value.ToString("dd/MM/yyyy HH:mm")</span></div> }
+            <div class="dato"><span>Subtotal</span><span>@Calculos.Moneda(Model.Subtotal)</span></div>
+            <div class="dato"><span>IVA</span><span>@Calculos.Moneda(Model.Iva)</span></div>
+            <div class="dato" style="font-size:19px"><span style="font-size:15px">Total</span><span class="fw-bold">@Calculos.Moneda(Model.Total)</span></div>
+            <p class="small text-suave mt-2">@Model.Observaciones · creada por @Model.CreadaPor</p>
+            <div class="d-grid gap-2 mt-3">
+                <a asp-action="Imprimir" asp-route-id="@Model.Id" target="_blank" class="btn btn-suave"><i class="bi bi-file-earmark-pdf"></i> Ver / imprimir PDF</a>
+                @if (Model.Estado == "Borrador")
+                {
+                    <form asp-action="Enviar" asp-route-id="@Model.Id" method="post" class="d-grid"><button class="btn btn-mk"><i class="bi bi-send"></i> Enviar al proveedor</button></form>
+                }
+                @if (Model.Estado is "Borrador" or "Enviada")
+                {
+                    <form asp-action="Recibir" asp-route-id="@Model.Id" method="post" class="d-grid" data-confirmar="¿Confirmas que llegó toda la mercancía? Se sumará al inventario."><button class="btn btn-ok"><i class="bi bi-box-arrow-in-down"></i> Recibir mercancía</button></form>
+                    <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post" class="d-grid" data-confirmar="¿Cancelar la orden?"><button class="btn btn-peligro btn-sm">Cancelar orden</button></form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

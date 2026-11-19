@@ -1,0 +1,32 @@
+@model List<Novedad>
+@{ ViewData["Title"] = "Novedades de personal"; ViewData["Migas"] = "Incapacidades, vacaciones y permisos"; ViewData["Modulo"] = "talento"; }
+<partial name="_SubnavTH" />
+<div class="tarjeta mb-3">
+    <form class="row g-2" method="get">
+        <div class="col-md-3"><select name="tipo" class="form-select"><option value="">Todos los tipos</option>@foreach (var t in Listas.TiposNovedad) { <option selected="@(ViewBag.Tipo == t)">@t</option> }</select></div>
+        <div class="col-md-3"><select name="estado" class="form-select"><option value="">Todos los estados</option>@foreach (var e in Listas.EstadosNovedad) { <option selected="@(ViewBag.EstadoSel == e)">@e</option> }</select></div>
+        <div class="col-md-auto"><button class="btn btn-suave"><i class="bi bi-funnel"></i></button></div>
+        <div class="col text-end"><a asp-action="Crear" class="btn btn-mk"><i class="bi bi-plus-lg"></i> Registrar novedad</a></div>
+    </form>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk">
+        <thead><tr><th>Empleado</th><th>Tipo</th><th>Desde</th><th>Hasta</th><th class="num">Días</th><th>Descripción</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var n in Model)
+        {
+            <tr><td><a asp-controller="Empleados" asp-action="Detalle" asp-route-id="@n.EmpleadoId">@n.Empleado?.NombreCompleto</a></td>
+                <td><span class="pill info">@n.Tipo</span></td><td>@n.FechaInicio.ToString("dd/MM/yyyy")</td><td>@n.FechaFin.ToString("dd/MM/yyyy")</td><td class="num">@n.Dias</td>
+                <td class="small">@n.Descripcion</td>
+                <td><span class="pill @(n.Estado == "Aprobada" ? "ok" : n.Estado == "Pendiente" ? "alerta" : "gris")">@n.Estado</span></td>
+                <td class="text-end">@if (n.Estado == "Pendiente")
+                {
+                    <div class="d-flex gap-1 justify-content-end">
+                        <form asp-action="CambiarEstado" asp-route-id="@n.Id" asp-route-estado="Aprobada" method="post"><button class="btn btn-ok btn-sm">Aprobar</button></form>
+                        <form asp-action="CambiarEstado" asp-route-id="@n.Id" asp-route-estado="Rechazada" method="post"><button class="btn btn-suave btn-sm">Rechazar</button></form>
+                    </div>
+                }</td></tr>
+        }
+        </tbody>
+    </table>
+</div>

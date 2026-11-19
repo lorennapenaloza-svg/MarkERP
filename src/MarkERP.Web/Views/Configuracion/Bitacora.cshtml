@@ -1,0 +1,11 @@
+@model List<Bitacora>
+@{ ViewData["Title"] = "Bitácora"; ViewData["Migas"] = "Quién hizo qué y cuándo"; ViewData["Modulo"] = "config"; }
+<div class="tarjeta mb-3">
+    <form method="get" class="row g-2"><div class="col-md-4"><select name="modulo" class="form-select" onchange="this.form.submit()"><option value="">Todos los módulos</option>
+        @foreach (string m in ViewBag.Modulos) { <option selected="@(ViewBag.Modulo == m)">@m</option> }</select></div></form>
+</div>
+<div class="tarjeta tabla-wrap">
+    <table class="tabla-mk"><thead><tr><th>Fecha</th><th>Usuario</th><th>Módulo</th><th>Acción</th><th>Detalle</th></tr></thead><tbody>
+    @foreach (var b in Model) { <tr><td class="small">@b.Fecha.ToString("dd/MM/yyyy HH:mm")</td><td>@b.Usuario</td><td><span class="pill mod">@b.Modulo</span></td><td>@b.Accion</td><td class="small text-suave">@b.Detalle</td></tr> }
+    </tbody></table>
+</div>

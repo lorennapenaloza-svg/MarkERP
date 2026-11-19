@@ -1,0 +1,35 @@
+@model RespuestaCotizacionVM
+@{ var s = (SolicitudCotizacion)ViewBag.Solicitud; var prov = (Proveedor)ViewBag.Proveedor;
+   ViewData["Title"] = "Registrar cotización"; ViewData["Migas"] = s.Numero + " · " + prov.RazonSocial; ViewData["Modulo"] = "cotizaciones"; }
+<form asp-action="Responder" method="post" class="tarjeta" style="max-width:900px">
+    <div asp-validation-summary="ModelOnly"></div>
+    <input type="hidden" asp-for="SolicitudId" /><input type="hidden" asp-for="ProveedorId" />
+    <p class="text-suave small">Escribe los precios unitarios (sin IVA) que envió <b>@prov.RazonSocial</b>. Se precargan con su precio de referencia.</p>
+    <table class="tabla-mk mb-3">
+        <thead><tr><th>Producto</th><th class="num">Cantidad</th><th style="width:200px">Precio unitario</th><th class="num">Subtotal</th></tr></thead>
+        <tbody>
+        @for (var i = 0; i < Model.Items.Count; i++)
+        {
+            var item = s.Items.First(x => x.ProductoId == Model.Items[i].ProductoId);
+            <tr>
+                <td>@item.Producto?.Nombre<input type="hidden" asp-for="Items[i].ProductoId" /><input type="hidden" asp-for="Items[i].Cantidad" /></td>
+                <td class="num">@Model.Items[i].Cantidad</td>
+                <td><input asp-for="Items[i].PrecioUnitario" type="number" min="1" step="1" class="form-control form-control-sm precio" data-cant="@Model.Items[i].Cantidad" /></td>
+                <td class="num sub"></td>
+            </tr>
+        }
+        <tr><td colspan="3" class="text-end fw-semibold">Subtotal</td><td class="num fw-bold" id="total"></td></tr>
+        </tbody>
+    </table>
+    <div class="row g-3">
+        <div class="col-md-3"><label class="form-label">Entrega (días)</label><input asp-for="TiempoEntregaDias" type="number" min="0" class="form-control" /></div>
+        <div class="col-md-3"><label class="form-label">Condiciones de pago</label><select asp-for="CondicionesPago" class="form-select" asp-items="ViewBag.Condiciones"></select></div>
+        <div class="col-md-2"><label class="form-label">Validez (días)</label><input asp-for="ValidezDias" type="number" min="1" class="form-control" /></div>
+        <div class="col-md-4"><label class="form-label">Observaciones</label><input asp-for="Observaciones" class="form-control" placeholder="Incluye transporte, descuento por volumen…" /></div>
+    </div>
+    <div class="mt-4 d-flex gap-2"><button class="btn btn-mk"><i class="bi bi-check2"></i> Guardar cotización</button><a asp-action="Detalle" asp-route-id="@s.Id" class="btn btn-suave">Cancelar</a></div>
+</form>
+@section Scripts { <script>
+function calc() { let t = 0; document.querySelectorAll('.precio').forEach(i => { const s = (parseFloat(i.value) || 0) * parseInt(i.dataset.cant); i.closest('tr').querySelector('.sub').textContent = moneda(s); t += s; }); document.getElementById('total').textContent = moneda(t); }
+document.querySelectorAll('.precio').forEach(i => i.addEventListener('input', calc)); calc();
+</script> }
